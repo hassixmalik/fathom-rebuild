@@ -1,0 +1,170 @@
+# Ledger v2 launch sync — flagship transcript source.
+# Format:  [@mm:ss] [~]SPEAKER: text [{#key}]
+#   @mm:ss  pins the segment start; unpinned segments are timed between pins by word count
+#   ~       cross-talk: the segment overlaps the previous one instead of following it
+#   {#key}  stable evidence handle referenced by outcomes.json
+#   ## n | title | mm:ss   starts a chapter
+# Lighter stretches are deliberately compressed: fewer words per minute than live speech.
+
+## 1 | Kickoff & agenda | 00:00
+@00:00 PRIYA: Hi everyone, give it a minute, a few people are still joining.
+@00:20 MARCUS: Morning. Or afternoon for Lena, I guess.
+LENA: Afternoon, yes. Coffee number three.
+@00:50 DANIEL: Can you hear me? My headset was doing the thing again.
+PRIYA: We can hear you, Daniel.
+@01:20 SOFIA: Hi all. Sorry, I'm coming straight from a customer call, so I might be a bit scattered.
+@01:45 OMAR: Hey.
+AISHA: Hi.
+@02:10 TOM: Hey, sorry I'm late, support standup ran over.
+PRIYA: No worries Tom. Okay, I think that's everyone. Eight of us.
+@02:40 PRIYA: So the agenda. One, launch readiness for Ledger v2, every area gives a quick status. Two, comms and rollout. Three, anything that could block us. And then owners and next steps. I'd like to leave today with a date we all believe in.
+@03:30 MARCUS: Sounds good.
+PRIYA: Great. Lena, do you want to kick us off with engineering?
+
+## 2 | Launch readiness | 04:00
+@04:00 LENA: Sure. So the short version is that Ledger v2 is feature complete. The new billing model, the invoice renderer and the API changes have all been merged since Tuesday.
+LENA: Staging has been running on the v2 model for about ten days without anything major. We fixed two small rounding issues last week.
+@05:10 OMAR: The migration script also passed on staging. It moves every workspace from the old ledger tables into the v2 model and keeps the old tables read-only for thirty days.
+PRIYA: How long does it take?
+OMAR: On staging, about forty minutes for everything. Production is bigger, so we'd expect a few hours, but it runs per workspace, so customers mostly won't notice.
+@06:30 PRIYA: Okay. Aisha, QA?
+AISHA: Regression suite is green on staging. I'm still going through a few edge cases on credit notes, nothing blocking.
+@07:20 PRIYA: Thanks. Sofia, customer side?
+SOFIA: Customers who saw the beta are positive. The big accounts mostly care that their existing invoices don't change, and the read-only old tables cover that.
+@08:20 PRIYA: Design?
+DANIEL: All the v2 screens are shipped. The only thing left is marketing assets, which I'm doing with Marcus.
+@08:50 PRIYA: Tom, anything from support?
+TOM: Help center articles are drafted. We'll need a heads-up a day before so the team knows.
+@09:15 PRIYA: Good. Marcus?
+MARCUS: The announcement post, email and changelog are all ready. I just need a date.
+@09:40 PRIYA: So, from what I'm hearing, every area is green. My proposal is that we launch this Friday. That gives us two more days on staging and we're not shipping on a Monday when everyone is catching up. {#proposed-friday}
+@10:05 MARCUS: Friday works really well for us. The press contact at FinOps Weekly offered a Friday slot, and I'd love to take it.
+LENA: Friday is tight, but if the migration takes a few hours on prod, we start in the morning and we're done before lunch.
+OMAR: We'd want to start early. Like seven a.m. our time.
+@10:50 SOFIA: For customers I'd want to send the heads-up email Wednesday, so that's fine for Friday.
+AISHA: QA can finish the credit note cases by Thursday.
+TOM: Support can do Friday. Fridays are usually quiet for us anyway.
+@11:30 PRIYA: Anyone against Friday? Speak now.
+DANIEL: Not from design.
+LENA: No, as long as we start the migration early.
+@12:00 PRIYA: Okay. So we're agreed: we launch Ledger v2 this Friday, with the migration starting early Friday morning. {#friday-agreed}
+@12:08 MARCUS: Great, I'm locking the announcement for Friday then. {#announce-locked}
+@12:15 LENA: Eng is fine with Friday. {#eng-ok-friday}
+@12:30 PRIYA: Perfect. Before comms, Lena, anything else on the eng checklist?
+@13:10 LENA: Monitoring dashboards for v2 are up. We added alerts on invoice generation errors and migration failures.
+@13:50 OMAR: And the old ledger tables are backed up separately, on top of the normal backups.
+@14:30 AISHA: I'll send the QA sign-off checklist in the channel after this.
+@15:10 PRIYA: Great. Let's move to comms.
+
+## 3 | Comms & rollout | 15:30
+@15:30 MARCUS: So the plan is a teaser post on the blog Thursday afternoon, then the full announcement and email Friday at ten.
+@16:20 DANIEL: The teaser banner is done. It says "Coming Friday" in big letters, which, you know, commits us. {#teaser-banner}
+MARCUS: That's the idea.
+@17:30 SOFIA: For the enterprise accounts I'll send a personal note before the general email goes out. They hate learning about changes from a newsletter.
+@18:40 TOM: Will the help center articles go live at the same time as the announcement?
+MARCUS: Yes, I'll link them from the post.
+@19:50 SOFIA: And the large tenants get a heads-up email two days before the migration, so they know their invoices might be read-only for a short window. {#heads-up-email}
+@20:30 LENA: On rollout, we'll keep v2 behind a feature flag and enable it in batches. Small workspaces first, the largest tenants last, so if something goes wrong we find out on small accounts. {#flag-rollout}
+@21:00 OMAR: That matches how the migration script batches, so it's not extra work.
+PRIYA: Good, that's agreed then: flag rollout, largest tenants last. {#flag-agreed}
+
+## 4 | Tangent: dashboard redesign | 22:00
+@22:00 MARCUS: Unrelated, but has anyone seen the new dashboard mocks Daniel posted? {#tangent-start}
+DANIEL: Oh, those are very early.
+@22:40 MARCUS: No, they're great. The revenue chart at the top is exactly what sales keeps asking for.
+SOFIA: Customers ask for that too. Mostly they want to export it.
+@23:30 DANIEL: The export is the hard part, honestly. We'd need a new reporting service.
+MARCUS: Could we tease it in the launch post? Like "and more coming soon"?
+@24:30 LENA: Please don't promise anything that's not built.
+DANIEL: I'm also not sure about dark mode for the charts, the contrast is...
+@25:20 PRIYA: Let's park that, it's not today's meeting. Daniel, can you share the mocks in the design channel and we'll pick it up next week. {#tangent-end}
+
+## 5 | Migration risk | 25:30
+@25:40 PRIYA: Okay, third item. Anything that could block Friday?
+@26:00 LENA: Yes. So, I didn't want to raise this until we had numbers, but we got them this morning.
+@26:15 PRIYA: Go ahead.
+@26:20 LENA: Last night we ran the migration as a dry run on a snapshot of production. Not staging, an actual prod snapshot.
+OMAR: Which we hadn't done before because the snapshot only got approved on Monday.
+@27:00 LENA: And it failed on four of the hundred and twenty largest workspaces. The migration didn't complete for them, and rollback for those four took about three hours. That's not something I'm comfortable doing during business hours on a Friday. {#blocker}
+@27:25 PRIYA: Okay. That's... important. Which four?
+@27:35 LENA: I'll share the list after the call, but two of them are among our biggest accounts.
+SOFIA: Oh no. Which ones? Never mind, after the call.
+@28:00 PRIYA: Omar, do we know why they failed?
+@28:30 OMAR: Yes, mostly. All four have legacy multi-currency invoices from before we normalised currencies in twenty twenty-one. The v2 model expects one currency per ledger, and the script hits a constraint violation and stops. The fix itself isn't huge, but it needs about two days, and then we need a second dry run to trust it. {#root-cause}
+@29:00 MARCUS: But we can't move it, the press date is set. FinOps Weekly gave us the Friday slot. {#crosstalk-marcus}
+~LENA: Then we ship broken billing to our biggest customers, Marcus, that's the trade. {#crosstalk-lena}
+~MARCUS: I'm not saying ship it broken, I'm saying we—
+~LENA: —and the rollback is three hours, during which they can't invoice.
+~PRIYA: Okay, okay, one at a time.
+@29:40 MARCUS: Sorry. I just mean we should look at every option before we give up on Friday.
+@30:00 PRIYA: That's fair. Lena, is there a version of Friday that works?
+@30:20 LENA: Only if the fix and the second dry run both go perfectly by Thursday night. I wouldn't bet on that.
+OMAR: Realistically the fix is Wednesday at the earliest, dry run Thursday, and if anything else shows up we have zero buffer.
+@31:00 AISHA: And I'd need to re-test the multi-currency invoices after the fix.
+@31:30 TOM: If this slips into the weekend, support— {#tom-interrupted}
+@31:33 ~MARCUS: Can we just exclude those four? Migrate everyone else Friday? {#marcus-overtalk}
+@31:50 PRIYA: Let's hold that thought, that's basically the options discussion. Let me write down what we know first.
+@32:10 PRIYA: So: the migration fails on four large workspaces, the fix is about two days plus a second dry run, and rollback takes three hours. That's a real constraint on Friday.
+@32:30 LENA: Yes. That's an accurate summary.
+@33:30 PRIYA: Omar, is the failure deterministic? It always fails on those four?
+OMAR: Yes, it's the data, not timing. Every run fails on the same rows.
+@34:40 SOFIA: Then at least we know exactly who's affected.
+@35:20 PRIYA: Okay. Let's move to options.
+
+## 6 | Options & replan | 36:00
+@36:00 PRIYA: So I see two options. Let me say them both and then we discuss.
+@36:20 DANIEL: Can I ask one thing first? Does this change anything for the in-app banner? It's set to show on Friday.
+PRIYA: It might, let's come back to that.
+@37:10 PRIYA: Option A: we keep Friday, but exclude the four failing workspaces from the migration. They stay on the old ledger until the fix lands. Option B: we move the launch to Monday, and the migration for everyone runs in a weekend window, Saturday night, when invoice volume is lowest. {#options}
+@37:50 MARCUS: A keeps the press slot.
+@38:05 LENA: A also means running two ledger models in production for at least a week, which is its own risk. Every invoice code path would need to check which model a workspace is on.
+OMAR: And the flag rollout assumes everyone ends up on v2. A breaks that assumption.
+@39:00 SOFIA: And honestly, A is worse for customers. Two of those four are our biggest accounts. If they're the only ones left on the old system while we announce v2 publicly, I'd rather delay. Excluding them is worse than a delay. {#reject-a}
+@39:30 MARCUS: Even if the delay costs us the FinOps Weekly slot?
+SOFIA: They'll write about it Monday too. Our biggest customer finding out from a press article that they're excluded, that's what I'd lose sleep over.
+@40:10 AISHA: B also gives me the weekend buffer to re-test multi-currency.
+@40:30 LENA: Engineering prefers B. With a Saturday night window, if rollback takes three hours, nobody's invoicing.
+@41:00 PRIYA: Okay, decision: we move the launch from Friday to Monday. The migration runs Saturday night for all workspaces. Friday is off. {#monday}
+@41:15 LENA: Agreed, Monday. {#lena-agrees-monday}
+@41:25 MARCUS: Fine. Monday. I'm not thrilled, but I get it. I'll ask FinOps Weekly for a Monday slot. {#marcus-reluctant}
+@41:45 OMAR: Saturday night works for me.
+@42:00 SOFIA: Good. I'll update the customer timeline.
+@42:20 PRIYA: Thanks everyone, I know that wasn't the easy answer.
+@43:00 MARCUS: Wait, one thing. Do we still publish the Friday teaser post? It's scheduled, and the banner literally says "Coming Friday". {#teaser-q}
+@43:20 DANIEL: I could change the copy, but...
+@43:30 PRIYA: Let's get through owners first.
+
+## 7 | Owners, next steps & wrap | 44:00
+@44:00 PRIYA: Okay, owners. I want a name next to everything.
+@45:10 PRIYA: Marcus, can you move the announcement, email and press slot to Monday? {#move-announcement}
+MARCUS: Yes. Announcement, email, press. Monday.
+@46:00 PRIYA: Lena, you'll still own the overall engineering go-no-go?
+LENA: Yes. I'll make the call Saturday afternoon based on the dry run.
+@46:50 PRIYA: And the migration itself, the fix and the plan, that needs one owner.
+@47:20 LENA: Omar knows the script best.
+@48:00 PRIYA: Omar, can you own the migration plan? That's the multi-currency fix, the Saturday night run order, and a rollback runbook. By Thursday end of day. {#omar-assigned}
+@48:15 OMAR: Yes, I'll own it. Fix by Wednesday, the full plan and runbook Thursday end of day. {#omar-accepts}
+@48:40 PRIYA: Thank you. Please put the runbook somewhere everyone can see it.
+@49:30 LENA: I'll schedule the second dry run on the prod snapshot for Thursday afternoon, after Omar's fix is merged. {#dry-run-2}
+@50:00 PRIYA: Good. Sofia?
+@50:30 SOFIA: I'll email the four affected tenants personally, today or tomorrow, explaining the Saturday night window and that their invoices are safe. {#tenant-emails}
+@51:10 PRIYA: Perfect. Anything else before open questions?
+@52:00 AISHA: Omar, do we have regression tests for the rollback path? Like, if we actually need to roll back on Saturday, has that been tested anywhere except the dry run? {#rollback-tests-q}
+@52:20 OMAR: Partially. The rollback works, we did it for the four last night, but there's no automated test. Let's take it offline. {#rollback-tests-offline}
+AISHA: Okay.
+@52:50 PRIYA: Let's make sure that doesn't get lost.
+@53:00 DANIEL: Back to the teaser, do I change the banner?
+PRIYA: Marcus and I will sort that out.
+@54:30 PRIYA: Okay, let's quickly recap the timeline. Fix Wednesday, plan Thursday, dry run Thursday, go-no-go Saturday afternoon, migration Saturday night, launch Monday.
+@55:30 LENA: Yes.
+@56:00 PRIYA: Last call for open questions.
+@56:20 MARCUS: Just the teaser one, which we'll take offline.
+@57:00 TOM: Sorry, I tried to say this earlier. If the migration is Saturday night, who's staffing support? My team isn't scheduled on weekends, and if two of our biggest accounts have problems Sunday morning, someone needs to be there. {#support-q}
+@57:30 PRIYA: That's a good question. I don't have an answer right now. {#support-no-answer}
+SOFIA: CS isn't on call on weekends either.
+@58:00 LENA: Engineering will have Omar and me on call Saturday night, but not for customer tickets.
+@58:30 PRIYA: Okay, let's figure it out async. Tom, can you start a thread? {#support-async}
+TOM: Sure.
+@59:00 PRIYA: Great. Thanks everyone, this was a hard one.
+@59:30 PRIYA: To recap: launch moves to Monday, migration Saturday night, Omar owns the migration plan, Lena the dry run, Sofia the tenant emails, Marcus the announcement. Thanks all. {#wrap}
+@59:50 MARCUS: Thanks, bye.
