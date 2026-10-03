@@ -1,0 +1,17 @@
+# Dry run 2 retro. Compressed: fewer words per minute than live speech.
+## 1 | Results | 00:00
+@00:00 LENA: Okay, second dry run is done. Omar, results?
+@00:30 OMAR: All four previously failing workspaces migrated. The multi-currency fix works.
+@02:30 OMAR: One catch: the largest workspace took two hours twenty on its own. The whole run is about five hours now. {#slow-workspace}
+@03:30 LENA: Saturday night gives us a window from ten p.m. to six a.m., so five hours fits, but it's not a lot of slack.
+@05:00 AISHA: I re-tested multi-currency invoices on the migrated snapshot. All matched.
+## 2 | Go / no-go | 06:00
+@06:30 LENA: Given that, I'm comfortable. Unless someone objects, it's a go for Saturday night. {#go-proposed}
+@07:30 OMAR: No objection.
+@09:00 LENA: Okay, decision: go for Saturday night as planned. {#go-decided}
+@10:00 AISHA: Can I raise the rollback tests from Monday? We still have no automated test for rollback.
+@11:00 LENA: Aisha, can you add an automated rollback test before Saturday? Omar can pair with you. {#rollback-test-assigned}
+@11:20 AISHA: Yes, I'll add it by Friday. {#rollback-test-accepted}
+@12:30 OMAR: What if the run overruns past six a.m.? Do we have a second window? {#overrun-q}
+@13:00 LENA: We don't. Let's think about it, I don't want to decide that tired. {#overrun-deferred}
+@14:30 LENA: Thanks both, good work.

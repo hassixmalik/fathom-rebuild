@@ -1,0 +1,16 @@
+{
+  "meeting": { "id": "launch-comms-check-in", "title": "Launch comms check-in", "company": "Tally", "platform": "Google Meet", "started_at": "2026-10-01T09:30:00Z", "duration": "15:00" },
+  "participants": [{ "id": "priya", "name": "Priya Shah", "role": "Head of Product" }, { "id": "marcus", "name": "Marcus Bell", "role": "Marketing lead" }, { "id": "daniel", "name": "Daniel Kim", "role": "Product designer" }],
+  "threads": [
+    { "id": "teaser-post", "kind": "decision", "title": "Friday teaser post", "current": "Pulled; banner says \"Coming Monday\"", "events": [
+      { "kind": "agreed", "value": "Pulled; banner says \"Coming Monday\"", "at": "06:30", "by": "priya", "claim": "Thursday teaser is pulled; the banner copy changes to \"Coming Monday\".", "reason": "A teaser for a date that already moved once is risky; a banner is easy to change again.", "evidence": ["teaser-decided"], "reason_evidence": ["pull-teaser"], "reason_supports": ["already moved once"], "supports": ["teaser post is pulled", "Coming Monday"], "affected": ["marcus", "daniel"] }
+    ]},
+    { "id": "press-afternoon", "kind": "constraint", "title": "Press slot is Monday 2 p.m. only", "current": "Active", "events": [
+      { "kind": "raised", "at": "10:00", "by": "marcus", "claim": "FinOps Weekly can only do the 2 p.m. slot on Monday, so the announcement moves to the afternoon.", "evidence": ["press-slot"], "supports": ["only the two p.m. slot"], "affected": ["marcus", "priya"] }
+    ]}
+  ],
+  "action_items": [
+    { "id": "ai-banner-copy", "owner": "daniel", "due": "Today", "text": "Change the in-app banner to \"Coming Monday\".", "at": "06:45", "evidence": ["banner-assigned"], "supports": ["update the banner"], "threads": ["teaser-post"], "affected": ["daniel"] },
+    { "id": "ai-confirm-slot", "owner": "marcus", "due": "Today", "text": "Confirm the Monday 2 p.m. slot with FinOps Weekly.", "at": "12:20", "evidence": ["confirm-slot"], "supports": ["confirm the two p.m. slot"], "threads": ["press-afternoon"], "affected": ["marcus"] }
+  ]
+}

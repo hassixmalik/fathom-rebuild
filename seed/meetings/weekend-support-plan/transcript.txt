@@ -1,0 +1,16 @@
+# Weekend support plan. Compressed: fewer words per minute than live speech.
+## 1 | Coverage | 00:00
+@00:00 PRIYA: Tom, thanks for starting the thread. Let's settle Saturday night support here.
+@01:10 TOM: So the migration runs Saturday night, and the biggest accounts are in it. Nobody on support is scheduled.
+@03:00 TOM: My proposal is two support engineers on call from Saturday ten p.m. to Sunday noon. {#two-support}
+@04:20 PRIYA: Two people for fourteen hours is a lot to ask at short notice.
+@05:30 SOFIA: The four affected tenants will contact their CS manager first, not support. They don't open tickets, they email me. {#cs-first}
+@07:00 TOM: That's true, the enterprise accounts mostly go through CS.
+@09:00 PRIYA: Then let's do one support engineer plus Sofia on call for the four large tenants, instead of two support engineers. {#one-plus-cs}
+@09:20 SOFIA: Yes, I'll take it. {#sofia-on-call}
+@09:40 TOM: Works for me. One from my team, plus Sofia.
+## 2 | Logistics | 11:00
+@12:00 TOM: I'll publish the on-call schedule and the escalation path to engineering by Thursday. {#schedule-assigned}
+@13:30 PRIYA: Do we pay overtime for this, or time off in lieu? {#overtime-q}
+@14:00 TOM: I'll have to check with HR. {#overtime-deferred}
+@15:00 PRIYA: Okay. Thanks both.

@@ -1,0 +1,21 @@
+# Invoice preview design review. Compressed: fewer words per minute than live speech.
+## 1 | Walkthrough | 00:00
+@00:00 PRIYA: Okay, let's look at the invoice preview for Ledger v2. Daniel, take it away.
+@00:40 DANIEL: So the preview shows the invoice exactly as the customer will receive it. I've split it into tabs: summary, line items, and taxes.
+@03:10 DANIEL: My proposal is tabs, so the line items don't push the totals off screen on long invoices. {#tabs-proposed}
+@04:00 MARCUS: Tabs look clean. They'll screenshot well for the launch post.
+@05:30 PRIYA: Sofia, how do customers actually use the preview?
+## 2 | Customer reality check | 07:00
+@07:00 SOFIA: Honestly, most of our larger customers print it or save it as a PDF before sending. With tabs, they'd only print the first tab. {#print-problem}
+@08:10 DANIEL: Hm. I didn't know printing was that common.
+@08:40 SOFIA: For the enterprise accounts, it's the main workflow. Their finance teams review a printed copy.
+@10:00 PRIYA: Could we keep the tabs and add a print view?
+@10:40 DANIEL: That's two layouts to maintain. I'd rather do one long page with sticky totals at the top.
+@12:30 PRIYA: Okay, let's change it: single scrolling page with sticky totals, no tabs. {#single-page}
+@12:45 MARCUS: Fine by me, as long as it still looks good in screenshots.
+## 3 | Next steps | 14:00
+@14:00 PRIYA: Daniel, can you update the mocks to the single page by Friday? {#mocks-assigned}
+@14:20 DANIEL: Yes, I'll have the single-page mocks by Friday. {#mocks-accepted}
+@16:00 MARCUS: Will customers be able to export the invoice as a PDF from the app in v2? {#pdf-q}
+@16:30 PRIYA: Good question. Not decided. Let's not block on it today. {#pdf-deferred}
+@18:30 PRIYA: Thanks everyone.

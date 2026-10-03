@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Loads seed/flagship/compiled.json into Postgres. Runs on every build, so each deploy resets the
+// Loads seed/compiled.json (all meetings) into Postgres. Runs on every build, so each deploy resets the
 // seed to its committed state. Idempotent and serialized with an advisory lock (preview + production
 // builds may run at once). Never prints the connection string.
 import { readFileSync } from "node:fs";
@@ -16,8 +16,7 @@ if (!url) {
   process.exit(0);
 }
 
-const data = JSON.parse(readFileSync(new URL("../seed/flagship/compiled.json", import.meta.url), "utf8"));
-const m = data.meeting;
+const { meetings } = JSON.parse(readFileSync(new URL("../seed/compiled.json", import.meta.url), "utf8"));
 
 const DDL = `
 CREATE TABLE meetings (id text PRIMARY KEY, title text NOT NULL, company text, platform text,
@@ -69,25 +68,29 @@ try {
     await client.query("DELETE FROM schema_version");
     await client.query("INSERT INTO schema_version VALUES ($1)", [SCHEMA_VERSION]);
   }
-  await client.query("DELETE FROM meetings WHERE id = $1", [m.id]);
-  const mid = m.id;
-  await insert(client, "meetings", ["id", "title", "company", "platform", "started_at", "duration_ms", "word_count"], [m]);
-  await insert(client, "participants", ["meeting_id", "id", "name", "role", "quiet", "color_index", "segment_count", "word_count"],
-    data.participants.map((p) => ({ ...p, meeting_id: mid, segment_count: p.segments, word_count: p.words })));
-  await insert(client, "chapters", ["meeting_id", "id", "idx", "title", "start_ms", "end_ms"],
-    data.chapters.map((c) => ({ ...c, meeting_id: mid, idx: c.index })));
-  await insert(client, "segments", ["meeting_id", "id", "seq", "participant_id", "start_ms", "end_ms", "text", "overlap"],
-    data.segments.map((s) => ({ ...s, meeting_id: mid })));
-  await insert(client, "threads", ["meeting_id", "id", "sort", "kind", "title", "current_value"],
-    data.threads.map((t, i) => ({ ...t, meeting_id: mid, sort: i, current_value: t.current })));
-  await insert(client, "thread_events", ["meeting_id", "id", "thread_id", "seq", "kind", "value", "state", "at_ms", "by_participant_id",
-    "claim", "reason", "interrupted", "related_thread_id", "evidence_segment_ids", "reason_segment_ids", "affected_participant_ids"],
-    data.threads.flatMap((t) => t.events.map((e) => ({ ...e, meeting_id: mid, thread_id: t.id, by_participant_id: e.by }))));
-  await insert(client, "action_items", ["meeting_id", "id", "sort", "owner_id", "text", "due", "assigned_at_ms",
-    "evidence_segment_ids", "thread_ids", "affected_participant_ids"],
-    data.action_items.map((a, i) => ({ ...a, meeting_id: mid, sort: i })));
+  // Whole seed is replaced: the database holds exactly what is committed, nothing else.
+  await client.query("DELETE FROM meetings");
+  for (const data of meetings) {
+    const m = data.meeting;
+    const mid = m.id;
+    await insert(client, "meetings", ["id", "title", "company", "platform", "started_at", "duration_ms", "word_count"], [m]);
+    await insert(client, "participants", ["meeting_id", "id", "name", "role", "quiet", "color_index", "segment_count", "word_count"],
+      data.participants.map((p) => ({ ...p, meeting_id: mid, segment_count: p.segments, word_count: p.words })));
+    await insert(client, "chapters", ["meeting_id", "id", "idx", "title", "start_ms", "end_ms"],
+      data.chapters.map((c) => ({ ...c, meeting_id: mid, idx: c.index })));
+    await insert(client, "segments", ["meeting_id", "id", "seq", "participant_id", "start_ms", "end_ms", "text", "overlap"],
+      data.segments.map((s) => ({ ...s, meeting_id: mid })));
+    await insert(client, "threads", ["meeting_id", "id", "sort", "kind", "title", "current_value"],
+      data.threads.map((t, i) => ({ ...t, meeting_id: mid, sort: i, current_value: t.current })));
+    await insert(client, "thread_events", ["meeting_id", "id", "thread_id", "seq", "kind", "value", "state", "at_ms", "by_participant_id",
+      "claim", "reason", "interrupted", "related_thread_id", "evidence_segment_ids", "reason_segment_ids", "affected_participant_ids"],
+      data.threads.flatMap((t) => t.events.map((e) => ({ ...e, meeting_id: mid, thread_id: t.id, by_participant_id: e.by }))));
+    await insert(client, "action_items", ["meeting_id", "id", "sort", "owner_id", "text", "due", "assigned_at_ms",
+      "evidence_segment_ids", "thread_ids", "affected_participant_ids"],
+      data.action_items.map((a, i) => ({ ...a, meeting_id: mid, sort: i })));
+  }
   await client.query("COMMIT");
-  console.log(`seed-db: loaded ${mid} (${data.segments.length} segments)`);
+  console.log(`seed-db: loaded ${meetings.length} meetings (${meetings.map((x) => x.meeting.id).join(", ")})`);
 } catch (e) {
   await client.query("ROLLBACK").catch(() => {});
   console.error("seed-db: failed:", e.message);

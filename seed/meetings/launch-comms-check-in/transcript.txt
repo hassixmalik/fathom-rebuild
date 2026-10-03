@@ -1,0 +1,15 @@
+# Launch comms check-in. Compressed: fewer words per minute than live speech.
+## 1 | Teaser post | 00:00
+@00:00 PRIYA: Quick one. We left the Friday teaser open on Monday's call, let's close it.
+@01:00 MARCUS: Right. The teaser is scheduled for Thursday and the banner literally says "Coming Friday".
+@02:30 DANIEL: I can change the banner copy in ten minutes.
+@04:00 MARCUS: I'd rather pull the Thursday teaser completely and just change the banner to "Coming Monday". A teaser two days before a date that already moved once feels risky. {#pull-teaser}
+@05:20 PRIYA: Agreed. If the date moves again, a banner is easy to change and a blog post isn't.
+@06:30 PRIYA: So: the teaser post is pulled, and the banner says "Coming Monday". {#teaser-decided}
+@06:45 DANIEL: I'll update the banner today. {#banner-assigned}
+## 2 | Press slot | 08:00
+@08:00 PRIYA: Marcus, what happened with FinOps Weekly?
+@10:00 MARCUS: They can do Monday, but only the two p.m. slot, not the morning. So the announcement goes out after lunch. {#press-slot}
+@11:00 PRIYA: That's fine, it gives the migration more buffer anyway.
+@12:20 MARCUS: I'll confirm the two p.m. slot with them today. {#confirm-slot}
+@14:00 PRIYA: Great, thanks both.

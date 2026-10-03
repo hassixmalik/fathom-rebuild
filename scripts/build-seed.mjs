@@ -1,11 +1,11 @@
 #!/usr/bin/env node
-// Compiles seed/flagship/{transcript.txt,outcomes.json} into seed/flagship/compiled.json and validates it.
+// Compiles every seed/meetings/<id>/{transcript.txt,outcomes.json} into seed/compiled.json and validates it.
 // Deterministic: same input, same output (stable segment ids). Exits 1 on any validation failure.
-import { readFileSync, writeFileSync } from "node:fs";
+import { readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const dir = join(dirname(fileURLToPath(import.meta.url)), "..", "seed", "flagship");
+const seedDir = join(dirname(fileURLToPath(import.meta.url)), "..", "seed");
 const toMs = (mmss) => {
   const [m, s] = mmss.split(":").map(Number);
   return (m * 60 + s) * 1000;
@@ -14,6 +14,7 @@ const fmt = (ms) => `${String(Math.floor(ms / 60000)).padStart(2, "0")}:${String
 const words = (t) => t.split(/\s+/).filter(Boolean).length;
 const naturalMs = (t) => 800 + words(t) * 400; // ~2.5 words/s
 
+function compileMeeting(dir, errors) {
 const outcomes = JSON.parse(readFileSync(join(dir, "outcomes.json"), "utf8"));
 const durationMs = toMs(outcomes.meeting.duration);
 const speakers = new Map(outcomes.participants.map((p) => [p.id.toUpperCase(), p.id]));
@@ -68,7 +69,6 @@ const segments = [...raw]
 chapters.forEach((c, i) => (c.end_ms = i + 1 < chapters.length ? chapters[i + 1].start_ms : durationMs));
 
 // ---- resolve outcomes ----
-const errors = [];
 const byKey = new Map();
 for (const s of segments) {
   if (!s.key) continue;
@@ -142,15 +142,16 @@ for (const s of segments) {
   if (s.end_ms > durationMs) errors.push(`${s.id}: ends after meeting end`);
 }
 const overlaps = segments.filter((s) => s.overlap);
-if (!overlaps.length) errors.push("no cross-talk segments");
+if (outcomes.meeting.expect_crosstalk && !overlaps.length) errors.push("no cross-talk segments");
 for (const o of overlaps) {
   const before = segments.filter((s) => s.seq < o.seq && s.participant_id !== o.participant_id).pop();
   if (!before || before.end_ms <= o.start_ms) errors.push(`${o.id}: marked cross-talk but does not overlap the previous speaker`);
 }
 chapters.forEach((c, i) => i && c.start_ms <= chapters[i - 1].start_ms && errors.push(`chapter ${c.index} out of order`));
 
-const compiled = {
-  meeting: { ...outcomes.meeting, duration_ms: durationMs, word_count: totalWords },
+const { expect_crosstalk, ...meeting } = outcomes.meeting;
+return {
+  meeting: { ...meeting, duration_ms: durationMs, word_count: totalWords },
   participants: outcomes.participants.map((p, i) => ({ ...p, quiet: !!p.quiet, color_index: i, ...stats[p.id] })),
   chapters,
   segments: segments.map(({ key, ...s }) => s),
@@ -158,10 +159,22 @@ const compiled = {
   action_items: actionItems,
 };
 
+}
+
+const errors = [];
+const meetings = [];
+for (const id of readdirSync(join(seedDir, "meetings")).sort()) {
+  const errs = [];
+  const m = compileMeeting(join(seedDir, "meetings", id), errs);
+  if (m.meeting.id !== id) errs.push(`folder ${id} holds meeting ${m.meeting.id}`);
+  errors.push(...errs.map((e) => `${id}: ${e}`));
+  meetings.push(m);
+  const talk = m.participants.map((p) => `${p.id} ${Math.round((p.words / m.meeting.word_count) * 100)}%`).join(", ");
+  console.log(`${id}: ${m.segments.length} segments, ${m.meeting.word_count} words, ${m.threads.length} threads, ${m.action_items.length} actions | ${talk}`);
+}
 if (errors.length) {
   console.error(`seed validation failed (${errors.length}):\n  - ${errors.join("\n  - ")}`);
   process.exit(1);
 }
-writeFileSync(join(dir, "compiled.json"), JSON.stringify(compiled, null, 1) + "\n");
-console.log(`seed ok: ${segments.length} segments, ${totalWords} words, ${chapters.length} chapters, ${threads.length} threads, ${actionItems.length} action items, ${overlaps.length} cross-talk`);
-console.log("talk:", Object.entries(stats).map(([k, v]) => `${k} ${((v.words / totalWords) * 100).toFixed(0)}%`).join(", "));
+writeFileSync(join(seedDir, "compiled.json"), JSON.stringify({ meetings }, null, 1) + "\n");
+console.log(`seed ok: ${meetings.length} meetings`);
