@@ -43,7 +43,7 @@ I got the capture test (8x assignment, hassixmalik, second session after the mod
 
 ### This session (`d52d7c42`)
 
-The hooks were added partway through this session, and they fire here: `UserPromptSubmit` logged the canary below on its own. The `Stop` hook had already backfilled the setup prompt as entry 2 and logged my reply as entry 3.
+The hooks were added partway through this session, and they fire here: `UserPromptSubmit` logged the canary below on its own. The `Stop` hook had already backfilled the setup prompt as entry 2 and logged my reply to it as `RESPONSE num=2`.
 
 ```
 [LOG_ENTRY type=PROMPT num=3 session=d52d7c42]
