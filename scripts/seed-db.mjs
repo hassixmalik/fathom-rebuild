@@ -5,7 +5,7 @@
 import { readFileSync } from "node:fs";
 import pg from "pg";
 
-const SCHEMA_VERSION = 2;
+const SCHEMA_VERSION = 3;
 const url = process.env.DATABASE_URL;
 if (!url) {
   if (process.env.VERCEL) {
@@ -20,7 +20,8 @@ const { meetings } = JSON.parse(readFileSync(new URL("../seed/compiled.json", im
 
 const DDL = `
 CREATE TABLE meetings (id text PRIMARY KEY, title text NOT NULL, company text, platform text,
-  started_at timestamptz NOT NULL, duration_ms int NOT NULL, word_count int NOT NULL);
+  started_at timestamptz NOT NULL, duration_ms int NOT NULL, word_count int NOT NULL,
+  media_url text); -- null = no recording: the player runs on a virtual clock, shown as "Audio only"
 CREATE TABLE participants (meeting_id text REFERENCES meetings ON DELETE CASCADE, id text, name text NOT NULL,
   role text, quiet boolean NOT NULL, color_index int NOT NULL, segment_count int NOT NULL, word_count int NOT NULL,
   PRIMARY KEY (meeting_id, id));
@@ -78,7 +79,8 @@ try {
   for (const data of meetings) {
     const m = data.meeting;
     const mid = m.id;
-    await insert(client, "meetings", ["id", "title", "company", "platform", "started_at", "duration_ms", "word_count"], [m]);
+    await insert(client, "meetings", ["id", "title", "company", "platform", "started_at", "duration_ms", "word_count", "media_url"],
+      [{ ...m, media_url: m.media_url ?? null }]);
     await insert(client, "participants", ["meeting_id", "id", "name", "role", "quiet", "color_index", "segment_count", "word_count"],
       data.participants.map((p) => ({ ...p, meeting_id: mid, segment_count: p.segments, word_count: p.words })));
     await insert(client, "chapters", ["meeting_id", "id", "idx", "title", "start_ms", "end_ms"],

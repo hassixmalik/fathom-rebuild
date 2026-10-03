@@ -1,13 +1,16 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import type { Meeting } from "@/lib/types";
+import { AppLogo } from "@/components/app-logo";
 import { Button } from "@/components/ui/button";
 import { cn, formatMs } from "@/lib/utils";
 import { formatDate, formatDuration } from "@/lib/format";
 import { CatchUp } from "./catch-up";
 import { focusForId, segmentIndexAt, type Focus } from "./model";
 import { OutcomesPanel } from "./outcomes-panel";
-import { PlayerBar } from "./player-bar";
+import { MediaCard } from "./media-card";
 import { SpeakerDot } from "./speaker-dot";
 import { Transcript, type TranscriptHandle } from "./transcript";
 import { useVirtualClock } from "./use-virtual-clock";
@@ -28,7 +31,8 @@ export function MeetingView({
   const [view, setViewState] = useState(initialView);
   const [pendingFocus, setPendingFocus] = useState<string | null>(null);
   const initialFocus = useMemo(() => focusForId(meeting, initialFocusId), [meeting, initialFocusId]);
-  const clock = useVirtualClock(meeting.durationMs, initialFocus?.atMs ?? initialMs ?? 0);
+  const mediaRef = useRef<HTMLVideoElement>(null);
+  const clock = useVirtualClock(meeting.durationMs, initialFocus?.atMs ?? initialMs ?? 0, meeting.mediaUrl ? mediaRef : undefined);
   const [focus, setFocus] = useState<Focus | null>(initialFocus);
   const [follow, setFollow] = useState(true);
   const [viewer, setViewerState] = useState<string | null>(
@@ -153,7 +157,14 @@ export function MeetingView({
   return (
     <div className="flex flex-col lg:h-dvh">
       <header className="flex flex-wrap items-center gap-x-4 gap-y-1 border-b bg-card px-4 py-2.5">
+        <AppLogo viewer={viewer} className="self-start pt-0.5 sm:border-r sm:pr-4" />
         <div className="min-w-0">
+          <Link
+            href={viewer ? `/?as=${encodeURIComponent(viewer)}` : "/"}
+            className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="size-3" /> Meetings
+          </Link>
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
             <h1 className="truncate text-[15px] font-semibold">{meeting.title}</h1>
             <div className="flex rounded-md border p-0.5 text-xs" role="tablist" aria-label="View">
@@ -211,12 +222,12 @@ export function MeetingView({
       ) : (
       <>
       {/* Desktop: two independently scrolling panes. Mobile: one page scroll, outcomes first, proof pane below at full height. */}
-      <div className="grid lg:min-h-0 lg:flex-1 lg:grid-cols-[minmax(380px,460px)_1fr]">
+      <div className="grid grid-cols-[minmax(0,1fr)] lg:min-h-0 lg:flex-1 lg:grid-cols-[minmax(380px,460px)_minmax(0,1fr)]">
         <aside className="border-b bg-background lg:overflow-y-auto lg:border-r lg:border-b-0" aria-label="Outcomes">
           <OutcomesPanel meeting={meeting} focusId={focus?.id ?? null} onFocus={onFocus} viewer={viewer} />
         </aside>
         <section ref={proofPane} className="flex h-dvh min-h-0 scroll-mt-0 flex-col lg:h-auto" aria-label="Recording and transcript">
-          <PlayerBar
+          <MediaCard
             meeting={meeting}
             currentMs={clock.currentMs}
             playing={clock.playing}
@@ -227,6 +238,7 @@ export function MeetingView({
             onMarker={onFocus}
             focusId={focus?.id ?? null}
             viewer={viewer}
+            mediaRef={mediaRef}
           />
           <div className="relative min-h-0 flex-1">
             <Transcript

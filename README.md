@@ -73,12 +73,18 @@ The order of importance is **outcomes > topics > people > transcript**. That dec
 | **Share a moment** | "Copy link to this moment" on events, action items and transcript lines. The link keeps `?as=`, so the recipient sees the same view. |
 | **Search** (index page) | Plain case-insensitive matching over transcripts, decisions, questions and action items. Each result opens at its moment. |
 | **Timeline** | Marker shape shows the type: decision, replaced decision, constraint, question, action. Chapter ticks, hover/focus tooltips, and a legend. |
+| **Navigation** | "← Meetings" above the title and the app logo both go back to the index. Both keep `?as=`, as do the index's meeting links and search. |
 | **Keyboard** | `space` plays/pauses; `j`/`k` jump to the previous/next chapter; `←`/`→` step through Catch-up. |
 
 ## What's stubbed
 
 - **Recording bot and calendar:** not built. Meetings come from committed seed data (`seed/meetings/*`).
-- **Recording:** the flagship meeting has no audio or video. A **simulated media clock** handles play, pause, seek and 1×/1.5×/2× speed through the same interface a `<video>` element would, so real media can be swapped in later.
+- **Recording:** no seeded meeting has audio or video. A **simulated media clock** handles play, pause, seek and 1×/1.5×/2× speed through the same interface a `<video>` element would.
+  - The media card at the top of the right column is labelled **"Audio only"**; it doesn't fake a video. It shows a participant tile for each person.
+  - Each tile lights up while its person is speaking, worked out from the transcript timings. During cross-talk, both tiles light up.
+  - A faint activity strip under the tiles shows talking versus silence across the meeting.
+  - With Viewing as, the viewer's tile is marked "you".
+  - If a meeting gets a `media_url`, the same card shows the `<video>`, and the clock follows the video instead.
 - **Transcription and AI extraction:** pre-written, not generated at runtime.
   - The transcript is hand-written in a plain-text format. Each line has a start time, a speaker and an optional `{#key}` tag that outcomes can point to.
   - Outcomes (`outcomes.json`) point to those keys, not to raw segment IDs.

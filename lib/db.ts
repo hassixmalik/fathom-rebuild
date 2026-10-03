@@ -60,7 +60,7 @@ export async function getMeeting(id: string): Promise<Meeting | null> {
   });
   return {
     id: m.id, title: m.title, company: m.company, platform: m.platform,
-    startedAt: m.started_at.toISOString(), durationMs: m.duration_ms, wordCount: m.word_count,
+    startedAt: m.started_at.toISOString(), durationMs: m.duration_ms, wordCount: m.word_count, mediaUrl: m.media_url,
     participants: participants.map((p) => ({
       id: p.id, name: p.name, role: p.role, quiet: p.quiet, colorIndex: p.color_index,
       segmentCount: p.segment_count, wordCount: p.word_count,

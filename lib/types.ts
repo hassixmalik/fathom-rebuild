@@ -83,6 +83,8 @@ export type Meeting = {
   startedAt: string;
   durationMs: number;
   wordCount: number;
+  /** Real recording, if any. Null for every seeded meeting: the player runs on a virtual clock. */
+  mediaUrl: string | null;
   participants: Participant[];
   chapters: Chapter[];
   segments: Segment[];
