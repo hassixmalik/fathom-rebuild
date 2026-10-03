@@ -1,9 +1,8 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import type { Meeting } from "@/lib/types";
-import { AppLogo } from "@/components/app-logo";
+import { TopBar } from "@/components/top-bar";
+import { ViewerSelect } from "@/components/viewer-select";
 import { Button } from "@/components/ui/button";
 import { cn, formatMs } from "@/lib/utils";
 import { formatDate, formatDuration } from "@/lib/format";
@@ -11,7 +10,6 @@ import { CatchUp } from "./catch-up";
 import { focusForId, segmentIndexAt, type Focus } from "./model";
 import { OutcomesPanel } from "./outcomes-panel";
 import { MediaCard } from "./media-card";
-import { SpeakerDot } from "./speaker-dot";
 import { Transcript, type TranscriptHandle } from "./transcript";
 import { useVirtualClock } from "./use-virtual-clock";
 
@@ -156,58 +154,32 @@ export function MeetingView({
 
   return (
     <div className="flex flex-col lg:h-dvh">
-      <header className="flex flex-wrap items-center gap-x-4 gap-y-1 border-b bg-card px-4 py-2.5">
-        <AppLogo viewer={viewer} className="self-start pt-0.5 sm:border-r sm:pr-4" />
-        <div className="min-w-0">
-          <Link
-            href={viewer ? `/?as=${encodeURIComponent(viewer)}` : "/"}
-            className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground"
-          >
-            <ArrowLeft className="size-3" /> Meetings
-          </Link>
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <h1 className="truncate text-[15px] font-semibold">{meeting.title}</h1>
-            <div className="flex rounded-md border p-0.5 text-xs" role="tablist" aria-label="View">
-              {(["catchup", "full"] as const).map((v) => (
-                <button
-                  key={v}
-                  role="tab"
-                  aria-selected={view === v}
-                  onClick={() => setView(v)}
-                  className={cn("rounded px-2 py-0.5 transition-colors", view === v ? "bg-accent-soft font-medium text-accent" : "text-muted-foreground hover:text-foreground")}
-                >
-                  {v === "catchup" ? "Catch-up" : "Full meeting"}
-                </button>
-              ))}
-            </div>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            {meeting.company} · {meeting.platform} ·{" "}
-            {formatDate(meeting.startedAt)} · {formatDuration(meeting.durationMs)}
-          </p>
-        </div>
-        <ul className="ml-auto hidden flex-wrap items-center gap-x-2.5 gap-y-0.5 text-xs text-muted-foreground xl:flex" aria-label="Participants">
-          {meeting.participants.map((p) => (
-            <li key={p.id} className="flex items-center gap-1" title={`${p.name}, ${p.role}${p.quiet ? " (spoke little)" : ""}`}>
-              <SpeakerDot index={p.colorIndex} /> {p.name.split(" ")[0]}
-            </li>
-          ))}
-        </ul>
-        <label className="ml-auto flex items-center gap-2 text-xs text-muted-foreground xl:ml-0">
-          Viewing as
-          <select
-            value={viewer ?? ""}
-            onChange={(e) => setViewer(e.target.value || null)}
-            className="h-8 rounded-md border bg-card px-2 text-[13px] font-medium text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <option value="">Everyone</option>
-            {meeting.participants.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name} · {p.role}
-              </option>
+      <TopBar
+        viewer={viewer}
+        crumb={meeting.title}
+        right={<ViewerSelect people={meeting.participants} value={viewer} onChange={setViewer} />}
+      />
+      <header className="border-b bg-card px-4 py-2.5">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          <h1 className="min-w-0 truncate text-[15px] font-semibold">{meeting.title}</h1>
+          <div className="flex rounded-md border p-0.5 text-xs" role="tablist" aria-label="View">
+            {(["catchup", "full"] as const).map((v) => (
+              <button
+                key={v}
+                role="tab"
+                aria-selected={view === v}
+                onClick={() => setView(v)}
+                className={cn("rounded px-2 py-0.5 transition-colors", view === v ? "bg-accent-soft font-medium text-accent" : "text-muted-foreground hover:text-foreground")}
+              >
+                {v === "catchup" ? "Catch-up" : "Full meeting"}
+              </button>
             ))}
-          </select>
-        </label>
+          </div>
+        </div>
+        <p className="mt-0.5 text-xs text-muted-foreground">
+          {meeting.company} · {meeting.platform} · {formatDate(meeting.startedAt)} · {formatDuration(meeting.durationMs)} ·{" "}
+          {meeting.participants.length} people
+        </p>
       </header>
 
       {view === "catchup" ? (

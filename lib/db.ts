@@ -136,3 +136,11 @@ export async function search(query: string, limit = 60): Promise<SearchHit[]> {
     text: r.text, speaker: r.speaker, atMs: r.at_ms, focusId: r.focus_id,
   }));
 }
+
+/** Everyone who appears in any meeting (for the index's Viewing-as picker). */
+export async function listPeople(): Promise<{ id: string; name: string; role: string | null }[]> {
+  const { rows } = await pool().query(
+    "SELECT DISTINCT ON (id) id, name, role, color_index FROM fathom.participants ORDER BY id, color_index",
+  );
+  return rows.sort((a, b) => a.color_index - b.color_index).map((r) => ({ id: r.id, name: r.name, role: r.role }));
+}

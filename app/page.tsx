@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { Search } from "lucide-react";
-import { listMeetings, search, type SearchHit } from "@/lib/db";
+import { listMeetings, listPeople, search, type SearchHit } from "@/lib/db";
 import { formatDate, formatDuration } from "@/lib/format";
 import { formatMs } from "@/lib/utils";
-import { AppLogo } from "@/components/app-logo";
+import { TopBar } from "@/components/top-bar";
+import { ViewerSelect } from "@/components/viewer-select";
 
 export const dynamic = "force-dynamic";
 
@@ -20,10 +21,11 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ q
   const { q = "", as = "" } = await searchParams;
   // Carry the "Viewing as" lens through the index so opening a meeting keeps it.
   const lens = as ? `as=${encodeURIComponent(as)}` : "";
-  const [meetings, hits] = await Promise.all([listMeetings(), q ? search(q) : Promise.resolve([])]);
+  const [meetings, people, hits] = await Promise.all([listMeetings(), listPeople(), q ? search(q) : Promise.resolve([])]);
   return (
+    <>
+    <TopBar viewer={as || null} right={<ViewerSelect people={people} value={as || null} />} />
     <main className="mx-auto max-w-3xl px-4 py-10">
-      <AppLogo viewer={as || null} className="mb-6" />
       <h1 className="text-lg font-semibold">Meetings</h1>
       <p className="mt-1 text-sm text-muted-foreground">Recorded calls for Tally. Open one to see what changed and jump to the moment it happened.</p>
 
@@ -41,6 +43,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ q
 
       {q ? <Results q={q} hits={hits} lens={lens} /> : <MeetingList meetings={meetings} lens={lens} />}
     </main>
+    </>
   );
 }
 

@@ -1,10 +1,10 @@
-# Fathom rebuild: what changed in the meeting
+# Delta: what changed in the meeting
 
 **Live:** https://fathom-rebuild-three.vercel.app
 **Flagship meeting:** https://fathom-rebuild-three.vercel.app/m/ledger-v2-launch-sync
 (add `?view=catchup`, `?as=tom` or `?as=omar` to the URL to try the other views)
 
-This is a one-day rebuild of [fathom.video](https://fathom.video), built with Next.js, Tailwind, shadcn/ui and Neon Postgres, and deployed on Vercel.
+This is a one-day rebuild of [fathom.video](https://fathom.video), named **Delta** in the UI (it doesn't use Fathom's brand), built with Next.js, Tailwind, shadcn/ui and Neon Postgres, and deployed on Vercel.
 
 ## Thesis
 
@@ -73,7 +73,7 @@ The order of importance is **outcomes > topics > people > transcript**. That dec
 | **Share a moment** | "Copy link to this moment" on events, action items and transcript lines. The link keeps `?as=`, so the recipient sees the same view. |
 | **Search** (index page) | Plain case-insensitive matching over transcripts, decisions, questions and action items. Each result opens at its moment. |
 | **Timeline** | Marker shape shows the type: decision, replaced decision, constraint, question, action. Chapter ticks, hover/focus tooltips, and a legend. |
-| **Navigation** | "← Meetings" above the title and the app logo both go back to the index. Both keep `?as=`, as do the index's meeting links and search. |
+| **Navigation** | A slim top bar shared by every page: the Delta logo, a breadcrumb ("Meetings / *meeting title*"), and the Viewing-as picker on the right. The logo and "Meetings" both go back to the index. Both keep `?as=`, as do the index's meeting links and search, and the picker also works on the index. |
 | **Keyboard** | `space` plays/pauses; `j`/`k` jump to the previous/next chapter; `←`/`→` step through Catch-up. |
 
 ## What's stubbed
