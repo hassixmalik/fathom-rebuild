@@ -62,3 +62,20 @@ The matching `RESPONSE num=3` is written by the `Stop` hook when this turn ends.
 3. **"Last user message in the transcript" is the wrong way to find a turn's prompt.** Because of mistake 1, the transcript holds rows from two writers. Fix: walk the `parentUuid` chain from the final assistant message.
 
 Known limitation: if a prompt contains a line that *starts* with `[LOG_ENTRY type=…]`, the entry counter can misparse it. Indented examples, like the ones in the setup brief, are not affected.
+
+## 6. Later changes (2026-10-03)
+
+**Auto commit and push.** The `Stop` hook now commits `.agent-logs/` (that path only) and pushes the current branch, which is `main` from now on.
+
+I checked whether this could cause recursion:
+- Git operations don't trigger Claude Code hooks.
+- The repo has no git hooks, and `core.hooksPath` isn't set.
+- This hook always exits 0, so it can't block a Stop or start a new turn.
+
+The push runs detached, with backoff of 2/4/8/16 s. If a push fails, the commit stays local and the next turn pushes it.
+
+`vercel.json` has an `ignoreCommand`, so commits that only touch logs don't trigger a Vercel deploy.
+
+**Interaction with the environment's own Stop hook.** The cloud environment runs `~/.claude/stop-hook-git-check.sh` in parallel with this hook. If it still sees the log file uncommitted, it blocks once and injects "Stop hook feedback: …". That starts one extra turn, and the check stands down on that turn (`stop_hook_active`), so it can't loop.
+
+**Bug found in that extra turn: entry 6 in the `d52d7c42` log is wrong.** The feedback is stored as an `isMeta` user row. The parent-chain walk skipped it, so the previous prompt was logged again as `PROMPT num=6` (duplicate text, earlier timestamp). The fix treats hook feedback as the prompt of its turn and logs it verbatim. I left entry 6 as it is, not edited.

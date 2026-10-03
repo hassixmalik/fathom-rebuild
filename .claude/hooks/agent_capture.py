@@ -4,10 +4,11 @@
 Wired in .claude/settings.json:
   SessionStart      -> remember the session's model (prompt entries need it before any reply exists)
   UserPromptSubmit  -> log PROMPT verbatim from the hook payload
-  Stop              -> log the final assistant text of the turn, read from the transcript
+  Stop              -> log the final assistant text of the turn, read from the transcript,
+                       then commit .agent-logs/ and push the current branch
 Never blocks Claude: every failure is swallowed and exits 0.
 """
-import datetime, glob, json, os, re, sys, tempfile, time
+import datetime, glob, json, os, re, subprocess, sys, tempfile, time
 
 AUTHOR = "hassixmalik"
 PROJECT = "fathom-rebuild"
@@ -40,7 +41,15 @@ def read_transcript(path):
     return rows
 
 
+def is_hook_feedback(r):
+    # Feedback from a blocking Stop hook is injected as an isMeta user row and starts a new turn.
+    c = (r.get("message") or {}).get("content")
+    return r.get("type") == "user" and r.get("isMeta") and isinstance(c, str) and c.startswith("Stop hook feedback:")
+
+
 def is_real_prompt(r):
+    if is_hook_feedback(r):
+        return True
     if r.get("type") != "user" or r.get("isMeta") or r.get("isSidechain"):
         return False
     c = (r.get("message") or {}).get("content")
@@ -223,13 +232,49 @@ def last_prompt_body(path):
     return None
 
 
+def git(root, *args, **kw):
+    return subprocess.run(["git", "-C", root] + list(args), capture_output=True, text=True, timeout=20, **kw)
+
+
+def commit_and_push_logs(p):
+    """Commit only .agent-logs/ and push the current branch, so no entry lives only in the VM.
+
+    Safe against recursion: git does not fire Claude Code hooks, the repo has no git hooks, and this
+    hook never exits non-zero, so it can never block the Stop or start a new turn. Push runs detached
+    with retries so a slow network cannot stall the session; an unpushed commit is retried next turn.
+    """
+    root = os.environ.get("CLAUDE_PROJECT_DIR") or p.get("cwd") or os.getcwd()
+    if git(root, "rev-parse", "--git-dir").returncode != 0:
+        return
+    if os.path.exists(os.path.join(root, ".git", "index.lock")):
+        return  # another git operation is running; the next Stop will pick these logs up
+    git(root, "add", "--", ".agent-logs")
+    if git(root, "diff", "--cached", "--quiet", "--", ".agent-logs").returncode != 0:
+        msg = ("agent-logs: capture session %s\n\nAutomatic commit by .claude/hooks/agent_capture.py (Stop hook).\n\n"
+               "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n" % p["session_id"][:8])
+        git(root, "commit", "-q", "-m", msg, "--", ".agent-logs")
+    branch = git(root, "branch", "--show-current").stdout.strip()
+    if not branch:
+        return  # detached HEAD: keep the commit local rather than guess a target
+    script = ("for d in 0 2 4 8 16; do sleep $d; timeout 60 git -C \"$0\" push -q origin \"$1\" && exit 0; done; "
+              "echo \"agent_capture: push of $1 failed\" >&2")
+    subprocess.Popen(["bash", "-c", script, root, "HEAD:" + branch], stdin=subprocess.DEVNULL,
+                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+
+
 def main():
+    p = {}
     try:
         p = json.load(sys.stdin)
         {"SessionStart": on_session_start, "UserPromptSubmit": on_prompt, "Stop": on_stop}.get(
             p.get("hook_event_name"), lambda _: None)(p)
     except Exception as e:  # never break the session
         sys.stderr.write("agent_capture: %r\n" % e)
+    try:
+        if p.get("hook_event_name") == "Stop":
+            commit_and_push_logs(p)
+    except Exception as e:
+        sys.stderr.write("agent_capture: git %r\n" % e)
     sys.exit(0)
 
 
