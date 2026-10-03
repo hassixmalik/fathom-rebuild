@@ -43,7 +43,17 @@ I got the capture test (8x assignment, hassixmalik, second session after the mod
 
 ### This session (`d52d7c42`)
 
-The canary sent in this session is pasted below once it has been sent and logged (see the next commit).
+The hooks were added partway through this session, and they fire here: `UserPromptSubmit` logged the canary below on its own. The `Stop` hook had already backfilled the setup prompt as entry 2 and logged my reply as entry 3.
+
+```
+[LOG_ENTRY type=PROMPT num=3 session=d52d7c42]
+timestamp: 2026-10-03T07:08:06.037Z
+model: claude-opus-5-5
+
+CAPTURE TEST — 8x assignment, Muhammad Hassan Raza
+```
+
+The matching `RESPONSE num=3` is written by the `Stop` hook when this turn ends. That is after this commit, so it is committed with the next turn's work. See the log file.
 
 ## 5. What I tried first that didn't work
 
