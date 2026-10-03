@@ -14,6 +14,14 @@ const fmt = (ms) => `${String(Math.floor(ms / 60000)).padStart(2, "0")}:${String
 const words = (t) => t.split(/\s+/).filter(Boolean).length;
 const naturalMs = (t) => 800 + words(t) * 400; // ~2.5 words/s
 
+// Speaker colours are per person across all meetings, so Tom is the same marker everywhere.
+const PEOPLE = ["priya", "lena", "omar", "marcus", "sofia", "daniel", "aisha", "tom"];
+const colorIndex = (id) => {
+  const i = PEOPLE.indexOf(id);
+  if (i < 0) throw new Error(`no colour slot for participant ${id}`);
+  return i;
+};
+
 function compileMeeting(dir, errors) {
 const outcomes = JSON.parse(readFileSync(join(dir, "outcomes.json"), "utf8"));
 const durationMs = toMs(outcomes.meeting.duration);
@@ -152,7 +160,7 @@ chapters.forEach((c, i) => i && c.start_ms <= chapters[i - 1].start_ms && errors
 const { expect_crosstalk, ...meeting } = outcomes.meeting;
 return {
   meeting: { ...meeting, duration_ms: durationMs, word_count: totalWords },
-  participants: outcomes.participants.map((p, i) => ({ ...p, quiet: !!p.quiet, color_index: i, ...stats[p.id] })),
+  participants: outcomes.participants.map((p) => ({ ...p, quiet: !!p.quiet, color_index: colorIndex(p.id), ...stats[p.id] })),
   chapters,
   segments: segments.map(({ key, ...s }) => s),
   threads,

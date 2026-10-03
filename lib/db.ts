@@ -12,13 +12,19 @@ function pool() {
 
 export async function listMeetings(): Promise<MeetingSummary[]> {
   const { rows } = await pool().query(
-    `SELECT m.id, m.title, m.company, m.started_at, m.duration_ms,
-            (SELECT count(*)::int FROM fathom.participants p WHERE p.meeting_id = m.id) AS participant_count
+    `SELECT m.id, m.title, m.company, m.platform, m.started_at, m.duration_ms,
+            (SELECT array_agg(p.name ORDER BY p.color_index) FROM fathom.participants p WHERE p.meeting_id = m.id) AS names,
+            (SELECT count(*)::int FROM fathom.threads t WHERE t.meeting_id = m.id AND t.kind = 'decision') AS decisions,
+            (SELECT count(DISTINCT e.thread_id)::int FROM fathom.thread_events e
+              WHERE e.meeting_id = m.id AND e.state = 'superseded') AS changed,
+            (SELECT count(*)::int FROM fathom.threads t WHERE t.meeting_id = m.id AND t.kind = 'question') AS open_questions,
+            (SELECT count(*)::int FROM fathom.action_items a WHERE a.meeting_id = m.id) AS actions
        FROM fathom.meetings m ORDER BY m.started_at DESC`,
   );
   return rows.map((r) => ({
-    id: r.id, title: r.title, company: r.company, startedAt: r.started_at.toISOString(),
-    durationMs: r.duration_ms, participantCount: r.participant_count,
+    id: r.id, title: r.title, company: r.company, platform: r.platform, startedAt: r.started_at.toISOString(),
+    durationMs: r.duration_ms, participantNames: r.names ?? [], decisions: r.decisions, changedDecisions: r.changed,
+    openQuestions: r.open_questions, actionItems: r.actions,
   }));
 }
 

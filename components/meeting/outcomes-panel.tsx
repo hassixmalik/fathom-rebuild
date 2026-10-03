@@ -3,7 +3,7 @@ import { ArrowRight, CornerDownRight } from "lucide-react";
 import type { ActionItem, Meeting, Participant, Segment, Thread, ThreadEvent } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { cn, formatMs } from "@/lib/utils";
-import { KIND_LABEL, threadsOf } from "./model";
+import { KIND_LABEL, actionInvolves, eventInvolves, forYou, threadInvolves, threadsOf } from "./model";
 import { SpeakerDot } from "./speaker-dot";
 import { TimeChip } from "./time-chip";
 
@@ -13,21 +13,37 @@ type Ctx = {
   threads: Map<string, Thread>;
   focusId: string | null;
   onFocus: (id: string, part?: "reason") => void;
+  /** "Viewing as" participant; null = everyone. Only emphasises, never hides. */
+  viewer: string | null;
 };
 
-export function OutcomesPanel({ meeting, focusId, onFocus }: { meeting: Meeting; focusId: string | null; onFocus: Ctx["onFocus"] }) {
+export function OutcomesPanel({
+  meeting,
+  focusId,
+  onFocus,
+  viewer,
+}: {
+  meeting: Meeting;
+  focusId: string | null;
+  onFocus: Ctx["onFocus"];
+  viewer: string | null;
+}) {
   const ctx: Ctx = {
     people: new Map(meeting.participants.map((p) => [p.id, p])),
     segs: new Map(meeting.segments.map((s) => [s.id, s])),
     threads: new Map(meeting.threads.map((t) => [t.id, t])),
     focusId,
     onFocus,
+    viewer,
   };
   const decisions = threadsOf(meeting, "decision");
   // Decisions that changed during the meeting lead; the path to their final state is the point.
   decisions.sort((a, b) => Number(hasHistory(b)) - Number(hasHistory(a)));
   return (
-    <div className="space-y-7 px-4 py-5">
+    <div className="px-4 py-5">
+      <h1 className="mb-3 text-[15px] font-semibold">What changed?</h1>
+      <div className="space-y-7">
+      {viewer && <ForYou meeting={meeting} ctx={ctx} />}
       <Section title="Decisions" count={decisions.length}>
         {decisions.map((t) => (hasHistory(t) ? <EvolvedDecision key={t.id} thread={t} ctx={ctx} /> : <StableDecision key={t.id} thread={t} ctx={ctx} />))}
       </Section>
@@ -44,13 +60,53 @@ export function OutcomesPanel({ meeting, focusId, onFocus }: { meeting: Meeting;
       <Section title="Action items" count={meeting.actionItems.length}>
         <ActionItems items={meeting.actionItems} ctx={ctx} />
       </Section>
+      </div>
     </div>
   );
 }
 
 const hasHistory = (t: Thread) => t.events.some((e) => e.state === "superseded");
+const DIM = "opacity-55 transition-opacity hover:opacity-100 focus-within:opacity-100";
+const dimThread = (t: Thread, ctx: Ctx) => (ctx.viewer && !threadInvolves(t, ctx.viewer) ? DIM : "");
+
+function ForYou({ meeting, ctx }: { meeting: Meeting; ctx: Ctx }) {
+  const p = ctx.people.get(ctx.viewer!)!;
+  const items = forYou(meeting, p.id);
+  return (
+    <section className="rounded-md border border-accent/30 bg-accent-soft/60 p-3.5" aria-label={`Relevant to ${p.name}`}>
+      <h2 className="flex items-center gap-1.5 text-xs font-semibold">
+        <SpeakerDot index={p.colorIndex} /> For {p.name.split(" ")[0]}
+        <span className="font-normal text-muted-foreground">· {items.length} of {meeting.threads.length + meeting.actionItems.length} items involve you</span>
+      </h2>
+      {items.length === 0 ? (
+        <p className="mt-1.5 text-xs text-muted-foreground">Nothing in this meeting was assigned to, raised by, or affects {p.name.split(" ")[0]}.</p>
+      ) : (
+        <ul className="mt-1.5 space-y-0.5">
+          {items.map((it) => (
+            <li key={`${it.label}-${it.focusId}`}>
+              <button
+                type="button"
+                onClick={() => ctx.onFocus(it.focusId)}
+                className={cn("-mx-1.5 flex w-[calc(100%+12px)] items-baseline gap-2 rounded-md px-1.5 py-1 text-left hover:bg-card", ctx.focusId === it.focusId && "bg-card")}
+              >
+                <span className="w-[86px] shrink-0 text-[11px] font-medium text-accent">{it.label}</span>
+                <span className="min-w-0 flex-1 text-[13px] leading-snug">
+                  {it.title}
+                  {it.detail && <span className="text-xs text-muted-foreground"> · {it.detail}</span>}
+                </span>
+                <span className="font-mono text-[11px] tabular-nums text-accent">{formatMs(it.atMs)}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      <p className="mt-2 text-[11px] text-muted-foreground">Everything else stays below, dimmed, not hidden.</p>
+    </section>
+  );
+}
 
 function Section({ title, count, children }: { title: string; count: number; children: React.ReactNode }) {
+  if (count === 0) return null;
   return (
     <section>
       <h2 className="mb-2 flex items-baseline gap-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
@@ -64,7 +120,7 @@ function Section({ title, count, children }: { title: string; count: number; chi
 function EvolvedDecision({ thread, ctx }: { thread: Thread; ctx: Ctx }) {
   const current = thread.events.findLast((e) => e.state === "current")!;
   return (
-    <article className="rounded-md border bg-card p-3.5 shadow-xs">
+    <article className={cn("rounded-md border bg-card p-3.5 shadow-xs", dimThread(thread, ctx))}>
       <div className="text-xs text-muted-foreground">{thread.title}</div>
       <div className="mt-0.5 flex flex-wrap items-center gap-2">
         <span className="text-xl font-semibold tracking-tight">{thread.current}</span>
@@ -82,7 +138,9 @@ function EvolvedDecision({ thread, ctx }: { thread: Thread; ctx: Ctx }) {
 
 /** One-line path: each earlier position, what challenged it, and the current state, all jumpable. */
 function EvolutionChain({ thread, ctx }: { thread: Thread; ctx: Ctx }) {
-  const steps = thread.events.filter((e) => (e.value != null && e.kind !== "proposed") || e.kind === "challenged");
+  // A proposal is only shown when it is the sole earlier position (otherwise the agreement replaces it).
+  const settled = thread.events.some((e) => e.state === "superseded" && e.kind !== "proposed");
+  const steps = thread.events.filter((e) => (e.value != null && (e.kind !== "proposed" || !settled)) || e.kind === "challenged");
   return (
     <ol className="mt-2 flex flex-wrap items-center gap-x-1 gap-y-1 text-xs" aria-label={`${thread.title} history`}>
       {steps.map((e, i) => {
@@ -115,7 +173,7 @@ function StableDecision({ thread, ctx }: { thread: Thread; ctx: Ctx }) {
   const e = thread.events[thread.events.length - 1];
   return (
     <article
-      className={cn("cursor-pointer rounded-md border bg-card px-3.5 py-2.5 hover:bg-muted/50", ctx.focusId === e.id && "border-accent/50")}
+      className={cn("cursor-pointer rounded-md border bg-card px-3.5 py-2.5 hover:bg-muted/50", ctx.focusId === e.id && "border-accent/50", dimThread(thread, ctx))}
       onClick={() => ctx.onFocus(e.id)}
     >
       <div className="text-xs text-muted-foreground">{thread.title}</div>
@@ -131,7 +189,7 @@ function StableDecision({ thread, ctx }: { thread: Thread; ctx: Ctx }) {
 
 function ThreadCard({ thread, ctx, status }: { thread: Thread; ctx: Ctx; status: React.ReactNode }) {
   return (
-    <article className="rounded-md border bg-card p-3.5">
+    <article className={cn("rounded-md border bg-card p-3.5", dimThread(thread, ctx))}>
       <div className="flex items-start justify-between gap-2">
         <h3 className="font-medium leading-snug">{thread.title}</h3>
         {status}
@@ -157,7 +215,7 @@ function EventPath({ thread, ctx }: { thread: Thread; ctx: Ctx }) {
 function EventStep({ event: e, ctx }: { event: ThreadEvent; ctx: Ctx }) {
   const focused = ctx.focusId === e.id;
   const by = ctx.people.get(e.by)!;
-  const quote = ctx.segs.get(e.evidenceSegmentIds[0])?.text;
+  const mine = ctx.viewer != null && eventInvolves(e, ctx.viewer);
   const related = e.relatedThreadId ? ctx.threads.get(e.relatedThreadId) : null;
   const pivotal = e.state === "current" || e.kind === "challenged";
   return (
@@ -182,12 +240,12 @@ function EventStep({ event: e, ctx }: { event: ThreadEvent; ctx: Ctx }) {
         )}
         {e.state === "superseded" && <Badge variant="outline">superseded</Badge>}
         {e.interrupted && <Badge variant="outline">cut off</Badge>}
+        {mine && <Badge variant="soft">{e.by === ctx.viewer ? "you" : "affects you"}</Badge>}
         <span className="flex items-center gap-1 text-muted-foreground">
           <SpeakerDot index={by.colorIndex} /> {by.name.split(" ")[0]}
         </span>
       </div>
       <p className="mt-0.5 text-[13px] leading-snug text-foreground/90">{e.claim}</p>
-      {quote && <p className="mt-1 line-clamp-2 border-l-2 pl-2 text-xs leading-snug text-muted-foreground italic">“{quote}”</p>}
       {e.reason && (
         <p className="mt-1 text-xs leading-snug">
           <span className="font-medium">Why: </span>
@@ -223,7 +281,11 @@ function ActionItems({ items, ctx }: { items: ActionItem[]; ctx: Ctx }) {
               <div
                 key={a.id}
                 onClick={() => ctx.onFocus(a.id)}
-                className={cn("-mx-1.5 mt-1 cursor-pointer rounded-md px-1.5 py-1 hover:bg-muted/60", ctx.focusId === a.id && "bg-accent-soft hover:bg-accent-soft")}
+                className={cn(
+                  "-mx-1.5 mt-1 cursor-pointer rounded-md px-1.5 py-1 hover:bg-muted/60",
+                  ctx.focusId === a.id && "bg-accent-soft hover:bg-accent-soft",
+                  ctx.viewer && !actionInvolves(a, ctx.viewer) && DIM,
+                )}
               >
                 <p className="text-[13px] leading-snug">{a.text}</p>
                 <div className="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-xs text-muted-foreground">

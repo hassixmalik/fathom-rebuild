@@ -68,4 +68,10 @@ export type Meeting = {
   actionItems: ActionItem[];
 };
 
-export type MeetingSummary = Pick<Meeting, "id" | "title" | "company" | "startedAt" | "durationMs"> & { participantCount: number };
+export type MeetingSummary = Pick<Meeting, "id" | "title" | "company" | "platform" | "startedAt" | "durationMs"> & {
+  participantNames: string[];
+  decisions: number;
+  changedDecisions: number;
+  openQuestions: number;
+  actionItems: number;
+};

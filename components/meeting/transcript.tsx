@@ -20,8 +20,9 @@ export const Transcript = forwardRef<
     reasonIds: Set<string>;
     onSeek: (ms: number) => void;
     onUserScroll: () => void;
+    viewer: string | null;
   }
->(function Transcript({ meeting, activeIds, evidenceIds, reasonIds, onSeek, onUserScroll }, ref) {
+>(function Transcript({ meeting, activeIds, evidenceIds, reasonIds, onSeek, onUserScroll, viewer }, ref) {
   const container = useRef<HTMLDivElement>(null);
   const people = useMemo(() => new Map(meeting.participants.map((p) => [p.id, p])), [meeting.participants]);
   const chapterAt = useMemo(() => {
@@ -84,6 +85,7 @@ export const Transcript = forwardRef<
                   <div className="flex items-center gap-1.5 text-xs font-medium">
                     <SpeakerDot index={p.colorIndex} />
                     {p.name}
+                    {viewer === p.id && <span className="font-normal text-accent">(you)</span>}
                     {s.overlap && <span className="font-normal text-muted-foreground">· talking over</span>}
                   </div>
                 )}
