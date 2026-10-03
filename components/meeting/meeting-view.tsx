@@ -2,8 +2,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Meeting } from "@/lib/types";
 import { Button } from "@/components/ui/button";
-import { formatMs } from "@/lib/utils";
+import { cn, formatMs } from "@/lib/utils";
 import { formatDate, formatDuration } from "@/lib/format";
+import { CatchUp } from "./catch-up";
 import { focusForId, segmentIndexAt, type Focus } from "./model";
 import { OutcomesPanel } from "./outcomes-panel";
 import { PlayerBar } from "./player-bar";
@@ -16,12 +17,16 @@ export function MeetingView({
   initialMs,
   initialFocusId,
   initialViewer,
+  initialView,
 }: {
   meeting: Meeting;
   initialMs: number | null;
   initialFocusId: string | null;
   initialViewer: string | null;
+  initialView: "catchup" | "full";
 }) {
+  const [view, setViewState] = useState(initialView);
+  const [pendingFocus, setPendingFocus] = useState<string | null>(null);
   const initialFocus = useMemo(() => focusForId(meeting, initialFocusId), [meeting, initialFocusId]);
   const clock = useVirtualClock(meeting.durationMs, initialFocus?.atMs ?? initialMs ?? 0);
   const [focus, setFocus] = useState<Focus | null>(initialFocus);
@@ -48,6 +53,14 @@ export function MeetingView({
     const u = new URL(window.location.href);
     if (v) u.searchParams.set("as", v);
     else u.searchParams.delete("as");
+    window.history.replaceState(null, "", u);
+  }, []);
+
+  const setView = useCallback((v: "catchup" | "full") => {
+    setViewState(v);
+    const u = new URL(window.location.href);
+    if (v === "catchup") u.searchParams.set("view", "catchup");
+    else u.searchParams.delete("view");
     window.history.replaceState(null, "", u);
   }, []);
 
@@ -94,6 +107,15 @@ export function MeetingView({
     [clock, segments, syncUrl],
   );
 
+  // "See the moment" from catch-up: switch views, then focus once the transcript is mounted.
+  useEffect(() => {
+    if (view === "full" && pendingFocus) {
+      const id = pendingFocus;
+      setPendingFocus(null);
+      requestAnimationFrame(() => onFocus(id));
+    }
+  }, [view, pendingFocus, onFocus]);
+
   // Initial deep link (?e= or ?t=): land on the moment without animation.
   useEffect(() => {
     const target = initialFocus?.evidence[0] ?? (initialMs != null ? segments[Math.max(0, segmentIndexAt(segments, initialMs))].id : null);
@@ -108,6 +130,7 @@ export function MeetingView({
 
   // Keyboard: space play/pause, j/k previous/next chapter.
   useEffect(() => {
+    if (view !== "full") return;
     const onKey = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement;
       if (t.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(t.tagName) || e.metaKey || e.ctrlKey || e.altKey) return;
@@ -122,7 +145,7 @@ export function MeetingView({
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [clock, meeting.chapters, seekFree]);
+  }, [clock, meeting.chapters, seekFree, view]);
 
   const evidenceIds = useMemo(() => new Set(focus?.evidence ?? []), [focus]);
   const reasonIds = useMemo(() => new Set(focus?.reason ?? []), [focus]);
@@ -131,7 +154,22 @@ export function MeetingView({
     <div className="flex flex-col lg:h-dvh">
       <header className="flex flex-wrap items-center gap-x-4 gap-y-1 border-b bg-card px-4 py-2.5">
         <div className="min-w-0">
-          <h1 className="truncate text-[15px] font-semibold">{meeting.title}</h1>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <h1 className="truncate text-[15px] font-semibold">{meeting.title}</h1>
+            <div className="flex rounded-md border p-0.5 text-xs" role="tablist" aria-label="View">
+              {(["catchup", "full"] as const).map((v) => (
+                <button
+                  key={v}
+                  role="tab"
+                  aria-selected={view === v}
+                  onClick={() => setView(v)}
+                  className={cn("rounded px-2 py-0.5 transition-colors", view === v ? "bg-accent-soft font-medium text-accent" : "text-muted-foreground hover:text-foreground")}
+                >
+                  {v === "catchup" ? "Catch-up" : "Full meeting"}
+                </button>
+              ))}
+            </div>
+          </div>
           <p className="text-xs text-muted-foreground">
             {meeting.company} · {meeting.platform} ·{" "}
             {formatDate(meeting.startedAt)} · {formatDuration(meeting.durationMs)}
@@ -161,6 +199,17 @@ export function MeetingView({
         </label>
       </header>
 
+      {view === "catchup" ? (
+        <CatchUp
+          meeting={meeting}
+          viewer={viewer}
+          onSeeMoment={(id) => {
+            setPendingFocus(id);
+            setView("full");
+          }}
+        />
+      ) : (
+      <>
       {/* Desktop: two independently scrolling panes. Mobile: one page scroll, outcomes first, proof pane below at full height. */}
       <div className="grid lg:min-h-0 lg:flex-1 lg:grid-cols-[minmax(380px,460px)_1fr]">
         <aside className="border-b bg-background lg:overflow-y-auto lg:border-r lg:border-b-0" aria-label="Outcomes">
@@ -198,6 +247,8 @@ export function MeetingView({
           </div>
         </section>
       </div>
+      </>
+      )}
     </div>
   );
 }

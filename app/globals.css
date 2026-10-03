@@ -48,3 +48,19 @@
     font-feature-settings: "tnum" 1, "cv11" 1;
   }
 }
+
+/* Catch-up card transition: subtle fade/lift, disabled for reduced motion. */
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+.card-in {
+  animation: card-in 220ms ease-out both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .card-in {
+    animation: none;
+  }
+}

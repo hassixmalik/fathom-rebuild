@@ -10,10 +10,18 @@ export default async function MeetingPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ t?: string; e?: string; as?: string }>;
+  searchParams: Promise<{ t?: string; e?: string; as?: string; view?: string }>;
 }) {
   const [{ id }, sp] = await Promise.all([params, searchParams]);
   const meeting = await getMeeting(id);
   if (!meeting) notFound();
-  return <MeetingView meeting={meeting} initialMs={parseTime(sp.t)} initialFocusId={sp.e ?? null} initialViewer={sp.as ?? null} />;
+  return (
+    <MeetingView
+      meeting={meeting}
+      initialMs={parseTime(sp.t)}
+      initialFocusId={sp.e ?? null}
+      initialViewer={sp.as ?? null}
+      initialView={sp.view === "catchup" ? "catchup" : "full"}
+    />
+  );
 }
