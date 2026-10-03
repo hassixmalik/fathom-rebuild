@@ -1,19 +1,166 @@
 {
-  "meeting": { "id": "dry-run-2-retro", "title": "Dry run 2 retro", "company": "Tally", "platform": "Zoom", "started_at": "2026-10-02T16:00:00Z", "duration": "15:00" },
-  "participants": [{ "id": "lena", "name": "Lena Fischer", "role": "Engineering lead" }, { "id": "omar", "name": "Omar Haddad", "role": "Backend engineer" }, { "id": "aisha", "name": "Aisha Rahman", "role": "QA engineer" }],
+  "meeting": {
+    "id": "dry-run-2-retro",
+    "title": "Dry run 2 retro",
+    "company": "Tally",
+    "platform": "Zoom",
+    "started_at": "2026-10-02T16:00:00Z",
+    "duration": "15:00"
+  },
+  "participants": [
+    {
+      "id": "lena",
+      "name": "Lena Fischer",
+      "role": "Engineering lead"
+    },
+    {
+      "id": "omar",
+      "name": "Omar Haddad",
+      "role": "Backend engineer"
+    },
+    {
+      "id": "aisha",
+      "name": "Aisha Rahman",
+      "role": "QA engineer"
+    }
+  ],
   "threads": [
-    { "id": "go-no-go", "kind": "decision", "title": "Saturday migration go/no-go", "current": "Go", "events": [
-      { "kind": "agreed", "value": "Go", "at": "09:00", "by": "lena", "claim": "Go for the Saturday-night migration as planned.", "reason": "All four previously failing workspaces migrated and multi-currency invoices matched.", "evidence": ["go-decided"], "supports": ["go for Saturday night"], "reason_evidence": ["go-proposed"], "reason_supports": ["comfortable"], "affected": ["lena", "omar", "aisha"] }
-    ]},
-    { "id": "long-run", "kind": "constraint", "title": "Full migration takes ~5 hours", "current": "Active: fits the 10 p.m.–6 a.m. window", "events": [
-      { "kind": "raised", "at": "02:30", "by": "omar", "claim": "The largest workspace alone took 2h20; the full run is about five hours.", "evidence": ["slow-workspace"], "supports": ["two hours twenty", "about five hours"], "affected": ["omar", "lena"] }
-    ]},
-    { "id": "overrun", "kind": "question", "title": "What if the run overruns past 6 a.m.?", "current": "Unresolved", "events": [
-      { "kind": "raised", "at": "12:30", "by": "omar", "claim": "Omar asks whether there's a second window if the run overruns.", "evidence": ["overrun-q"], "supports": ["second window"], "affected": ["omar", "lena"] },
-      { "kind": "deferred", "at": "13:00", "by": "lena", "claim": "No second window exists; deferred.", "evidence": ["overrun-deferred"], "supports": ["We don't"], "affected": ["omar", "lena"] }
-    ]}
+    {
+      "id": "go-no-go",
+      "kind": "decision",
+      "title": "Saturday migration go/no-go",
+      "current": "Go",
+      "events": [
+        {
+          "kind": "agreed",
+          "value": "Go",
+          "at": "09:00",
+          "by": "lena",
+          "claim": "Go for the Saturday-night migration as planned.",
+          "reason": "All four previously failing workspaces migrated and multi-currency invoices matched.",
+          "evidence": [
+            "go-decided"
+          ],
+          "supports": [
+            "go for Saturday night"
+          ],
+          "reason_evidence": [
+            "go-proposed"
+          ],
+          "reason_supports": [
+            "comfortable"
+          ],
+          "affected": [
+            "lena",
+            "omar",
+            "aisha"
+          ]
+        }
+      ],
+      "resolves": [
+        {
+          "meeting": "ledger-v2-launch-sync",
+          "thread": "migration-blocker",
+          "relation": "picks_up"
+        }
+      ]
+    },
+    {
+      "id": "long-run",
+      "kind": "constraint",
+      "title": "Full migration takes ~5 hours",
+      "current": "Active: fits the 10 p.m.–6 a.m. window",
+      "events": [
+        {
+          "kind": "raised",
+          "at": "02:30",
+          "by": "omar",
+          "claim": "The largest workspace alone took 2h20; the full run is about five hours.",
+          "evidence": [
+            "slow-workspace"
+          ],
+          "supports": [
+            "two hours twenty",
+            "about five hours"
+          ],
+          "affected": [
+            "omar",
+            "lena"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "overrun",
+      "kind": "question",
+      "title": "What if the run overruns past 6 a.m.?",
+      "current": "Unresolved",
+      "events": [
+        {
+          "kind": "raised",
+          "at": "12:30",
+          "by": "omar",
+          "claim": "Omar asks whether there's a second window if the run overruns.",
+          "evidence": [
+            "overrun-q"
+          ],
+          "supports": [
+            "second window"
+          ],
+          "affected": [
+            "omar",
+            "lena"
+          ]
+        },
+        {
+          "kind": "deferred",
+          "at": "13:00",
+          "by": "lena",
+          "claim": "No second window exists; deferred.",
+          "evidence": [
+            "overrun-deferred"
+          ],
+          "supports": [
+            "We don't"
+          ],
+          "affected": [
+            "omar",
+            "lena"
+          ]
+        }
+      ]
+    }
   ],
   "action_items": [
-    { "id": "ai-rollback-test", "owner": "aisha", "due": "Friday", "text": "Add an automated rollback test (pair with Omar).", "at": "11:00", "evidence": ["rollback-test-assigned", "rollback-test-accepted"], "supports": ["automated rollback test", "I'll add it by Friday"], "threads": ["go-no-go"], "affected": ["aisha", "omar"] }
+    {
+      "id": "ai-rollback-test",
+      "owner": "aisha",
+      "due": "Friday",
+      "text": "Add an automated rollback test (pair with Omar).",
+      "at": "11:00",
+      "evidence": [
+        "rollback-test-assigned",
+        "rollback-test-accepted"
+      ],
+      "supports": [
+        "automated rollback test",
+        "I'll add it by Friday"
+      ],
+      "threads": [
+        "go-no-go"
+      ],
+      "affected": [
+        "aisha",
+        "omar"
+      ],
+      "short": "automated rollback test",
+      "resolves": [
+        {
+          "meeting": "ledger-v2-launch-sync",
+          "thread": "rollback-tests",
+          "relation": "picks_up"
+        }
+      ]
+    }
   ]
 }

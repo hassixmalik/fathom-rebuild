@@ -1,18 +1,158 @@
 {
-  "meeting": { "id": "weekend-support-plan", "title": "Weekend support plan", "company": "Tally", "platform": "Google Meet", "started_at": "2026-10-01T14:00:00Z", "duration": "16:00" },
-  "participants": [{ "id": "priya", "name": "Priya Shah", "role": "Head of Product" }, { "id": "tom", "name": "Tom Becker", "role": "Support lead" }, { "id": "sofia", "name": "Sofia Alvarez", "role": "Customer success" }],
+  "meeting": {
+    "id": "weekend-support-plan",
+    "title": "Weekend support plan",
+    "company": "Tally",
+    "platform": "Google Meet",
+    "started_at": "2026-10-01T14:00:00Z",
+    "duration": "16:00"
+  },
+  "participants": [
+    {
+      "id": "priya",
+      "name": "Priya Shah",
+      "role": "Head of Product"
+    },
+    {
+      "id": "tom",
+      "name": "Tom Becker",
+      "role": "Support lead"
+    },
+    {
+      "id": "sofia",
+      "name": "Sofia Alvarez",
+      "role": "Customer success"
+    }
+  ],
   "threads": [
-    { "id": "saturday-coverage", "kind": "decision", "title": "Saturday-night support coverage", "current": "1 support engineer + Sofia (CS)", "events": [
-      { "kind": "proposed", "value": "2 support engineers", "at": "03:00", "by": "tom", "claim": "Tom proposes two support engineers on call, Saturday 10 p.m. to Sunday noon.", "evidence": ["two-support"], "supports": ["two support engineers on call"], "affected": ["tom"] },
-      { "kind": "challenged", "at": "05:30", "by": "sofia", "claim": "The four affected tenants contact their CS manager, not support.", "evidence": ["cs-first"], "supports": ["contact their CS manager first"], "affected": ["tom", "sofia"] },
-      { "kind": "changed", "value": "1 support engineer + Sofia (CS)", "at": "09:00", "by": "priya", "claim": "One support engineer plus Sofia on call for the four large tenants.", "reason": "Enterprise accounts escalate through CS, and two engineers for 14 hours at short notice is a lot.", "evidence": ["one-plus-cs", "sofia-on-call"], "supports": ["one support engineer plus Sofia", "I'll take it"], "affected": ["tom", "sofia"] }
-    ]},
-    { "id": "overtime", "kind": "question", "title": "Overtime or time off in lieu for the weekend shift?", "current": "Unresolved", "events": [
-      { "kind": "raised", "at": "13:30", "by": "priya", "claim": "Priya asks how the weekend shift is compensated.", "evidence": ["overtime-q"], "supports": ["overtime"], "affected": ["tom", "sofia"] },
-      { "kind": "deferred", "at": "14:00", "by": "tom", "claim": "Tom will check with HR.", "evidence": ["overtime-deferred"], "supports": ["check with HR"], "affected": ["tom"] }
-    ]}
+    {
+      "id": "saturday-coverage",
+      "kind": "decision",
+      "title": "Saturday-night support coverage",
+      "current": "1 support engineer + Sofia (CS)",
+      "events": [
+        {
+          "kind": "proposed",
+          "value": "2 support engineers",
+          "at": "03:00",
+          "by": "tom",
+          "claim": "Tom proposes two support engineers on call, Saturday 10 p.m. to Sunday noon.",
+          "evidence": [
+            "two-support"
+          ],
+          "supports": [
+            "two support engineers on call"
+          ],
+          "affected": [
+            "tom"
+          ]
+        },
+        {
+          "kind": "challenged",
+          "at": "05:30",
+          "by": "sofia",
+          "claim": "The four affected tenants contact their CS manager, not support.",
+          "evidence": [
+            "cs-first"
+          ],
+          "supports": [
+            "contact their CS manager first"
+          ],
+          "affected": [
+            "tom",
+            "sofia"
+          ]
+        },
+        {
+          "kind": "changed",
+          "value": "1 support engineer + Sofia (CS)",
+          "at": "09:00",
+          "by": "priya",
+          "claim": "One support engineer plus Sofia on call for the four large tenants.",
+          "reason": "Enterprise accounts escalate through CS, and two engineers for 14 hours at short notice is a lot.",
+          "evidence": [
+            "one-plus-cs",
+            "sofia-on-call"
+          ],
+          "supports": [
+            "one support engineer plus Sofia",
+            "I'll take it"
+          ],
+          "affected": [
+            "tom",
+            "sofia"
+          ]
+        }
+      ],
+      "resolves": [
+        {
+          "meeting": "ledger-v2-launch-sync",
+          "thread": "support-staffing",
+          "relation": "answers"
+        }
+      ]
+    },
+    {
+      "id": "overtime",
+      "kind": "question",
+      "title": "Overtime or time off in lieu for the weekend shift?",
+      "current": "Unresolved",
+      "events": [
+        {
+          "kind": "raised",
+          "at": "13:30",
+          "by": "priya",
+          "claim": "Priya asks how the weekend shift is compensated.",
+          "evidence": [
+            "overtime-q"
+          ],
+          "supports": [
+            "overtime"
+          ],
+          "affected": [
+            "tom",
+            "sofia"
+          ]
+        },
+        {
+          "kind": "deferred",
+          "at": "14:00",
+          "by": "tom",
+          "claim": "Tom will check with HR.",
+          "evidence": [
+            "overtime-deferred"
+          ],
+          "supports": [
+            "check with HR"
+          ],
+          "affected": [
+            "tom"
+          ]
+        }
+      ]
+    }
   ],
   "action_items": [
-    { "id": "ai-on-call-schedule", "owner": "tom", "due": "Thursday", "text": "Publish the on-call schedule and escalation path to engineering.", "at": "12:00", "evidence": ["schedule-assigned"], "supports": ["publish the on-call schedule"], "threads": ["saturday-coverage"], "affected": ["tom", "sofia"] }
+    {
+      "id": "ai-on-call-schedule",
+      "owner": "tom",
+      "due": "Thursday",
+      "text": "Publish the on-call schedule and escalation path to engineering.",
+      "at": "12:00",
+      "evidence": [
+        "schedule-assigned"
+      ],
+      "supports": [
+        "publish the on-call schedule"
+      ],
+      "threads": [
+        "saturday-coverage"
+      ],
+      "affected": [
+        "tom",
+        "sofia"
+      ],
+      "short": "on-call schedule"
+    }
   ]
 }

@@ -1,9 +1,12 @@
 "use client";
+import { useState } from "react";
+import Link from "next/link";
 import { ArrowRight, CornerDownRight } from "lucide-react";
-import type { ActionItem, Meeting, Participant, Segment, Thread, ThreadEvent } from "@/lib/types";
+import type { ActionItem, Meeting, MeetingLink, Participant, Segment, Thread, ThreadEvent } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { cn, formatMs } from "@/lib/utils";
-import { KIND_LABEL, actionInvolves, eventInvolves, forYou, threadInvolves, threadsOf } from "./model";
+import { CopyMoment } from "./copy-moment";
+import { KIND_LABEL, actionInvolves, actionsForDecision, eventInvolves, forYou, threadInvolves, threadsOf } from "./model";
 import { SpeakerDot } from "./speaker-dot";
 import { TimeChip } from "./time-chip";
 
@@ -11,6 +14,7 @@ type Ctx = {
   people: Map<string, Participant>;
   segs: Map<string, Segment>;
   threads: Map<string, Thread>;
+  meeting: Meeting;
   focusId: string | null;
   onFocus: (id: string, part?: "reason") => void;
   /** "Viewing as" participant; null = everyone. Only emphasises, never hides. */
@@ -32,6 +36,7 @@ export function OutcomesPanel({
     people: new Map(meeting.participants.map((p) => [p.id, p])),
     segs: new Map(meeting.segments.map((s) => [s.id, s])),
     threads: new Map(meeting.threads.map((t) => [t.id, t])),
+    meeting,
     focusId,
     onFocus,
     viewer,
@@ -132,6 +137,7 @@ function EvolvedDecision({ thread, ctx }: { thread: Thread; ctx: Ctx }) {
       <EvolutionChain thread={thread} ctx={ctx} />
       <h3 className="mt-3 mb-1 text-[11px] font-medium text-muted-foreground">How it got here</h3>
       <EventPath thread={thread} ctx={ctx} />
+      <MeetingLinks links={thread.links} viewer={ctx.viewer} />
     </article>
   );
 }
@@ -165,7 +171,75 @@ function EvolutionChain({ thread, ctx }: { thread: Thread; ctx: Ctx }) {
           </li>
         );
       })}
+      <OwnerStep thread={thread} ctx={ctx} />
     </ol>
+  );
+}
+
+/** Last chain step: who now owns the follow-through (actions tied to the blocker first), "+N" for the rest. */
+function OwnerStep({ thread, ctx }: { thread: Thread; ctx: Ctx }) {
+  const [open, setOpen] = useState(false);
+  const actions = actionsForDecision(ctx.meeting, thread, ctx.viewer);
+  if (!actions.length) return null;
+  const [first, ...rest] = actions;
+  const chip = (a: ActionItem) => {
+    const p = ctx.people.get(a.ownerId)!;
+    return (
+      <button
+        key={a.id}
+        type="button"
+        onClick={() => ctx.onFocus(a.id)}
+        className={cn("flex items-center gap-1 rounded-md border px-1.5 py-0.5 hover:bg-muted", ctx.focusId === a.id && "ring-2 ring-ring")}
+        title={`${p.name}: ${a.text}${a.due ? ` (due ${a.due})` : ""}`}
+      >
+        <SpeakerDot index={p.colorIndex} />
+        <span className="font-medium">{p.name.split(" ")[0]}</span>
+        <span className="text-muted-foreground">{a.short}</span>
+        <span className="font-mono text-[11px] tabular-nums text-muted-foreground">{formatMs(a.assignedAtMs)}</span>
+      </button>
+    );
+  };
+  return (
+    <>
+      <li className="flex items-center gap-1">
+        <ArrowRight aria-hidden className="size-3 text-muted-foreground" />
+        {chip(first)}
+        {rest.length > 0 && (
+          <button
+            type="button"
+            onClick={() => setOpen((o) => !o)}
+            aria-expanded={open}
+            className="rounded-md px-1.5 py-0.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+            title={rest.map((a) => `${ctx.people.get(a.ownerId)!.name.split(" ")[0]}: ${a.short}`).join(", ")}
+          >
+            {open ? "less" : `+${rest.length}`}
+          </button>
+        )}
+      </li>
+      {open && <li className="flex basis-full flex-wrap gap-1 pl-4">{rest.map(chip)}</li>}
+    </>
+  );
+}
+
+/** "Answered later in …" / "Follows up …": hand-authored seed links between meetings, never inferred. */
+function MeetingLinks({ links, viewer }: { links: MeetingLink[]; viewer: string | null }) {
+  if (!links.length) return null;
+  const label = (l: MeetingLink) =>
+    l.direction === "later"
+      ? { answers: "Answered later in", picks_up: "Picked up later in", changes: "Changed later in" }[l.relation]
+      : { answers: "Answers a question from", picks_up: "Follows up", changes: "Changes a decision from" }[l.relation];
+  return (
+    <div className="mt-2 space-y-0.5">
+      {links.map((l) => (
+        <Link
+          key={`${l.direction}-${l.meetingId}-${l.focusId}`}
+          href={`/m/${l.meetingId}?e=${l.focusId}${viewer ? `&as=${viewer}` : ""}`}
+          className="flex items-center gap-1 text-xs font-medium text-accent hover:underline"
+        >
+          {label(l)} {l.meetingTitle} <ArrowRight className="size-3" />
+        </Link>
+      ))}
+    </div>
   );
 }
 
@@ -183,6 +257,7 @@ function StableDecision({ thread, ctx }: { thread: Thread; ctx: Ctx }) {
           {KIND_LABEL[e.kind]?.toLowerCase()} at <TimeChip ms={e.atMs} active={ctx.focusId === e.id} onClick={() => ctx.onFocus(e.id)} /> · unchanged
         </span>
       </div>
+      <MeetingLinks links={thread.links} viewer={ctx.viewer} />
     </article>
   );
 }
@@ -197,6 +272,7 @@ function ThreadCard({ thread, ctx, status }: { thread: Thread; ctx: Ctx; status:
       <div className="mt-2">
         <EventPath thread={thread} ctx={ctx} />
       </div>
+      <MeetingLinks links={thread.links} viewer={ctx.viewer} />
     </article>
   );
 }
@@ -220,7 +296,7 @@ function EventStep({ event: e, ctx }: { event: ThreadEvent; ctx: Ctx }) {
   const pivotal = e.state === "current" || e.kind === "challenged";
   return (
     <li
-      className={cn("relative cursor-pointer rounded-md py-1.5 pr-2 pl-5 hover:bg-muted/60", focused && "bg-accent-soft hover:bg-accent-soft")}
+      className={cn("group/step relative cursor-pointer rounded-md py-1.5 pr-2 pl-5 hover:bg-muted/60", focused && "bg-accent-soft hover:bg-accent-soft")}
       onClick={() => ctx.onFocus(e.id)}
     >
       <span
@@ -244,6 +320,7 @@ function EventStep({ event: e, ctx }: { event: ThreadEvent; ctx: Ctx }) {
         <span className="flex items-center gap-1 text-muted-foreground">
           <SpeakerDot index={by.colorIndex} /> {by.name.split(" ")[0]}
         </span>
+        <CopyMoment target={{ e: e.id }} className="ml-auto opacity-0 [@media(hover:none)]:opacity-100 group-hover/step:opacity-100 focus-visible:opacity-100" />
       </div>
       <p className="mt-0.5 text-[13px] leading-snug text-foreground/90">{e.claim}</p>
       {e.reason && (
@@ -282,7 +359,7 @@ function ActionItems({ items, ctx }: { items: ActionItem[]; ctx: Ctx }) {
                 key={a.id}
                 onClick={() => ctx.onFocus(a.id)}
                 className={cn(
-                  "-mx-1.5 mt-1 cursor-pointer rounded-md px-1.5 py-1 hover:bg-muted/60",
+                  "group/action -mx-1.5 mt-1 cursor-pointer rounded-md px-1.5 py-1 hover:bg-muted/60",
                   ctx.focusId === a.id && "bg-accent-soft hover:bg-accent-soft",
                   ctx.viewer && !actionInvolves(a, ctx.viewer) && DIM,
                 )}
@@ -293,7 +370,9 @@ function ActionItems({ items, ctx }: { items: ActionItem[]; ctx: Ctx }) {
                   <span>assigned at</span>
                   <TimeChip ms={a.assignedAtMs} active={ctx.focusId === a.id} onClick={() => ctx.onFocus(a.id)} />
                   {a.threadIds.length > 0 && <span>· from {a.threadIds.map((t) => ctx.threads.get(t)?.title).join(", ")}</span>}
+                  <CopyMoment target={{ e: a.id }} className="ml-auto opacity-0 [@media(hover:none)]:opacity-100 group-hover/action:opacity-100 focus-visible:opacity-100" />
                 </div>
+                <MeetingLinks links={a.links} viewer={ctx.viewer} />
               </div>
             ))}
           </div>

@@ -5,7 +5,7 @@
 import { readFileSync } from "node:fs";
 import pg from "pg";
 
-const SCHEMA_VERSION = 1;
+const SCHEMA_VERSION = 2;
 const url = process.env.DATABASE_URL;
 if (!url) {
   if (process.env.VERCEL) {
@@ -38,12 +38,17 @@ CREATE TABLE thread_events (meeting_id text REFERENCES meetings ON DELETE CASCAD
   evidence_segment_ids text[] NOT NULL, reason_segment_ids text[] NOT NULL, affected_participant_ids text[] NOT NULL,
   PRIMARY KEY (meeting_id, id));
 CREATE TABLE action_items (meeting_id text REFERENCES meetings ON DELETE CASCADE, id text, sort int NOT NULL,
-  owner_id text NOT NULL, text text NOT NULL, due text, assigned_at_ms int NOT NULL,
+  owner_id text NOT NULL, text text NOT NULL, short text NOT NULL, due text, assigned_at_ms int NOT NULL,
   evidence_segment_ids text[] NOT NULL, thread_ids text[] NOT NULL, affected_participant_ids text[] NOT NULL,
   PRIMARY KEY (meeting_id, id));
+-- A later meeting's thread or action that answers / picks up / changes an earlier meeting's thread.
+CREATE TABLE links (meeting_id text REFERENCES meetings ON DELETE CASCADE, source_kind text NOT NULL, source_id text NOT NULL,
+  target_meeting_id text NOT NULL, target_thread_id text NOT NULL, relation text NOT NULL);
+CREATE INDEX links_by_target ON links (target_meeting_id);
 `;
 
 async function insert(client, table, cols, rows) {
+  if (!rows.length) return;
   for (let i = 0; i < rows.length; i += 200) {
     const chunk = rows.slice(i, i + 200);
     const params = [];
@@ -62,7 +67,7 @@ try {
   await client.query("CREATE TABLE IF NOT EXISTS schema_version (version int NOT NULL)");
   const v = (await client.query("SELECT version FROM schema_version")).rows[0]?.version;
   if (v !== SCHEMA_VERSION) {
-    for (const t of ["action_items", "thread_events", "threads", "segments", "chapters", "participants", "meetings"])
+    for (const t of ["links", "action_items", "thread_events", "threads", "segments", "chapters", "participants", "meetings"])
       await client.query(`DROP TABLE IF EXISTS ${t} CASCADE`);
     await client.query(DDL);
     await client.query("DELETE FROM schema_version");
@@ -85,9 +90,13 @@ try {
     await insert(client, "thread_events", ["meeting_id", "id", "thread_id", "seq", "kind", "value", "state", "at_ms", "by_participant_id",
       "claim", "reason", "interrupted", "related_thread_id", "evidence_segment_ids", "reason_segment_ids", "affected_participant_ids"],
       data.threads.flatMap((t) => t.events.map((e) => ({ ...e, meeting_id: mid, thread_id: t.id, by_participant_id: e.by }))));
-    await insert(client, "action_items", ["meeting_id", "id", "sort", "owner_id", "text", "due", "assigned_at_ms",
+    await insert(client, "action_items", ["meeting_id", "id", "sort", "owner_id", "text", "short", "due", "assigned_at_ms",
       "evidence_segment_ids", "thread_ids", "affected_participant_ids"],
       data.action_items.map((a, i) => ({ ...a, meeting_id: mid, sort: i })));
+    await insert(client, "links", ["meeting_id", "source_kind", "source_id", "target_meeting_id", "target_thread_id", "relation"], [
+      ...data.threads.flatMap((t) => t.resolves.map((l) => ({ source_kind: "thread", source_id: t.id, ...l }))),
+      ...data.action_items.flatMap((a) => a.resolves.map((l) => ({ source_kind: "action", source_id: a.id, ...l }))),
+    ].map((l) => ({ ...l, meeting_id: mid, target_meeting_id: l.meeting, target_thread_id: l.thread })));
   }
   await client.query("COMMIT");
   console.log(`seed-db: loaded ${meetings.length} meetings (${meetings.map((x) => x.meeting.id).join(", ")})`);

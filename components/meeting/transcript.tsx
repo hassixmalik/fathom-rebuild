@@ -2,6 +2,7 @@
 import { forwardRef, useImperativeHandle, useMemo, useRef } from "react";
 import type { Meeting } from "@/lib/types";
 import { cn, formatMs } from "@/lib/utils";
+import { CopyMoment } from "./copy-moment";
 import { SpeakerDot } from "./speaker-dot";
 
 export type TranscriptHandle = { scrollToSegment: (id: string, smooth?: boolean) => void };
@@ -70,7 +71,7 @@ export const Transcript = forwardRef<
               data-seg={s.id}
               onClick={() => onSeek(s.startMs)}
               className={cn(
-                "group grid cursor-pointer grid-cols-[44px_1fr] gap-x-2 rounded-md border-l-2 border-transparent px-2",
+                "group grid cursor-pointer grid-cols-[44px_1fr_auto] gap-x-2 rounded-md border-l-2 border-transparent px-2",
                 sameSpeaker ? "py-0.5" : "pt-2 pb-0.5",
                 activeIds.has(s.id) && "bg-muted",
                 isReason && "border-accent/40 bg-accent-soft/50",
@@ -91,6 +92,7 @@ export const Transcript = forwardRef<
                 )}
                 <p className={cn("text-[13.5px] leading-relaxed", !isEvidence && !activeIds.has(s.id) && "text-foreground/85")}>{s.text}</p>
               </div>
+              <CopyMoment target={{ ms: s.startMs }} className="self-start mt-0.5 opacity-0 [@media(hover:none)]:opacity-100 group-hover:opacity-100 focus-visible:opacity-100" />
             </div>
           </div>
         );

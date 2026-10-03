@@ -114,3 +114,16 @@ export function markersOf(meeting: Meeting): Marker[] {
   }
   return out.sort((x, y) => x.atMs - y.atMs);
 }
+
+/**
+ * Actions that follow from a decision: those tied to the constraint that challenged it come first
+ * (they are the fix), then those tied to the decision itself. The viewer's own action leads.
+ */
+export function actionsForDecision(meeting: Meeting, t: Thread, viewer: string | null): ActionItem[] {
+  const blockers = new Set(t.events.map((e) => e.relatedThreadId).filter((x): x is string => !!x));
+  const rank = (a: ActionItem) =>
+    (viewer && a.ownerId === viewer ? 0 : 10) + (a.threadIds.some((id) => blockers.has(id)) ? 0 : 1) + (a.threadIds.includes(t.id) ? 0 : 2);
+  return meeting.actionItems
+    .filter((a) => a.threadIds.includes(t.id) || a.threadIds.some((id) => blockers.has(id)))
+    .sort((x, y) => rank(x) - rank(y) || x.assignedAtMs - y.assignedAtMs);
+}

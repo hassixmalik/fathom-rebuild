@@ -1,18 +1,158 @@
 {
-  "meeting": { "id": "invoice-preview-review", "title": "Invoice preview design review", "company": "Tally", "platform": "Zoom", "started_at": "2026-09-24T13:00:00Z", "duration": "20:00" },
-  "participants": [{ "id": "priya", "name": "Priya Shah", "role": "Head of Product" }, { "id": "daniel", "name": "Daniel Kim", "role": "Product designer" }, { "id": "marcus", "name": "Marcus Bell", "role": "Marketing lead" }, { "id": "sofia", "name": "Sofia Alvarez", "role": "Customer success" }],
+  "meeting": {
+    "id": "invoice-preview-review",
+    "title": "Invoice preview design review",
+    "company": "Tally",
+    "platform": "Zoom",
+    "started_at": "2026-09-24T13:00:00Z",
+    "duration": "20:00"
+  },
+  "participants": [
+    {
+      "id": "priya",
+      "name": "Priya Shah",
+      "role": "Head of Product"
+    },
+    {
+      "id": "daniel",
+      "name": "Daniel Kim",
+      "role": "Product designer"
+    },
+    {
+      "id": "marcus",
+      "name": "Marcus Bell",
+      "role": "Marketing lead"
+    },
+    {
+      "id": "sofia",
+      "name": "Sofia Alvarez",
+      "role": "Customer success"
+    }
+  ],
   "threads": [
-    { "id": "preview-layout", "kind": "decision", "title": "Invoice preview layout", "current": "Single page, sticky totals", "events": [
-      { "kind": "proposed", "value": "Tabs", "at": "03:10", "by": "daniel", "claim": "Daniel proposes tabs so long line-item lists don't push totals off screen.", "evidence": ["tabs-proposed"], "supports": ["My proposal is tabs"], "affected": ["daniel", "marcus"] },
-      { "kind": "challenged", "at": "07:00", "by": "sofia", "claim": "Large customers print or save the preview as PDF; tabs would print only the first tab.", "evidence": ["print-problem"], "supports": ["print it or save it as a PDF", "only print the first tab"], "affected": ["daniel", "sofia"] },
-      { "kind": "changed", "value": "Single page, sticky totals", "at": "12:30", "by": "priya", "claim": "Tabs dropped: one scrolling page with sticky totals.", "reason": "A separate print view would mean maintaining two layouts.", "evidence": ["single-page"], "supports": ["single scrolling page with sticky totals"], "affected": ["daniel", "marcus", "sofia"] }
-    ]},
-    { "id": "pdf-export", "kind": "question", "title": "Can customers export invoices as PDF in v2?", "current": "Unresolved", "events": [
-      { "kind": "raised", "at": "16:00", "by": "marcus", "claim": "Marcus asks whether in-app PDF export ships with v2.", "evidence": ["pdf-q"], "supports": ["export the invoice as a PDF"], "affected": ["marcus", "sofia"] },
-      { "kind": "deferred", "at": "16:30", "by": "priya", "claim": "Not decided; deferred.", "evidence": ["pdf-deferred"], "supports": ["Not decided"], "affected": ["marcus", "sofia"] }
-    ]}
+    {
+      "id": "preview-layout",
+      "kind": "decision",
+      "title": "Invoice preview layout",
+      "current": "Single page, sticky totals",
+      "events": [
+        {
+          "kind": "proposed",
+          "value": "Tabs",
+          "at": "03:10",
+          "by": "daniel",
+          "claim": "Daniel proposes tabs so long line-item lists don't push totals off screen.",
+          "evidence": [
+            "tabs-proposed"
+          ],
+          "supports": [
+            "My proposal is tabs"
+          ],
+          "affected": [
+            "daniel",
+            "marcus"
+          ]
+        },
+        {
+          "kind": "challenged",
+          "at": "07:00",
+          "by": "sofia",
+          "claim": "Large customers print or save the preview as PDF; tabs would print only the first tab.",
+          "evidence": [
+            "print-problem"
+          ],
+          "supports": [
+            "print it or save it as a PDF",
+            "only print the first tab"
+          ],
+          "affected": [
+            "daniel",
+            "sofia"
+          ]
+        },
+        {
+          "kind": "changed",
+          "value": "Single page, sticky totals",
+          "at": "12:30",
+          "by": "priya",
+          "claim": "Tabs dropped: one scrolling page with sticky totals.",
+          "reason": "A separate print view would mean maintaining two layouts.",
+          "evidence": [
+            "single-page"
+          ],
+          "supports": [
+            "single scrolling page with sticky totals"
+          ],
+          "affected": [
+            "daniel",
+            "marcus",
+            "sofia"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pdf-export",
+      "kind": "question",
+      "title": "Can customers export invoices as PDF in v2?",
+      "current": "Unresolved",
+      "events": [
+        {
+          "kind": "raised",
+          "at": "16:00",
+          "by": "marcus",
+          "claim": "Marcus asks whether in-app PDF export ships with v2.",
+          "evidence": [
+            "pdf-q"
+          ],
+          "supports": [
+            "export the invoice as a PDF"
+          ],
+          "affected": [
+            "marcus",
+            "sofia"
+          ]
+        },
+        {
+          "kind": "deferred",
+          "at": "16:30",
+          "by": "priya",
+          "claim": "Not decided; deferred.",
+          "evidence": [
+            "pdf-deferred"
+          ],
+          "supports": [
+            "Not decided"
+          ],
+          "affected": [
+            "marcus",
+            "sofia"
+          ]
+        }
+      ]
+    }
   ],
   "action_items": [
-    { "id": "ai-single-page-mocks", "owner": "daniel", "due": "Friday", "text": "Update the preview mocks to a single page with sticky totals.", "at": "14:00", "evidence": ["mocks-assigned", "mocks-accepted"], "supports": ["single page by Friday"], "threads": ["preview-layout"], "affected": ["daniel"] }
+    {
+      "id": "ai-single-page-mocks",
+      "owner": "daniel",
+      "due": "Friday",
+      "text": "Update the preview mocks to a single page with sticky totals.",
+      "at": "14:00",
+      "evidence": [
+        "mocks-assigned",
+        "mocks-accepted"
+      ],
+      "supports": [
+        "single page by Friday"
+      ],
+      "threads": [
+        "preview-layout"
+      ],
+      "affected": [
+        "daniel"
+      ],
+      "short": "single-page mocks"
+    }
   ]
 }

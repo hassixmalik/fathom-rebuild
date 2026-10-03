@@ -30,6 +30,7 @@ export function MeetingView({
     initialViewer && meeting.participants.some((p) => p.id === initialViewer) ? initialViewer : null,
   );
   const transcript = useRef<TranscriptHandle>(null);
+  const proofPane = useRef<HTMLElement>(null);
 
   const { segments } = meeting;
   const activeIdx = segmentIndexAt(segments, clock.currentMs);
@@ -67,6 +68,8 @@ export function MeetingView({
       setFollow(true);
       clock.seek(start);
       if (ids[0]) transcript.current?.scrollToSegment(ids[0]);
+      // Single-column layout: bring the proof (player + transcript) into view.
+      if (window.matchMedia("(max-width: 1023px)").matches) proofPane.current?.scrollIntoView({ behavior: "smooth", block: "start" });
       syncUrl(f, start);
     },
     [clock, segments, syncUrl],
@@ -125,7 +128,7 @@ export function MeetingView({
   const reasonIds = useMemo(() => new Set(focus?.reason ?? []), [focus]);
 
   return (
-    <div className="flex h-dvh flex-col">
+    <div className="flex flex-col lg:h-dvh">
       <header className="flex flex-wrap items-center gap-x-4 gap-y-1 border-b bg-card px-4 py-2.5">
         <div className="min-w-0">
           <h1 className="truncate text-[15px] font-semibold">{meeting.title}</h1>
@@ -158,11 +161,12 @@ export function MeetingView({
         </label>
       </header>
 
-      <div className="grid min-h-0 flex-1 grid-rows-[auto_1fr] lg:grid-cols-[minmax(380px,460px)_1fr] lg:grid-rows-1">
-        <aside className="max-h-[55dvh] overflow-y-auto border-b bg-background lg:max-h-none lg:border-r lg:border-b-0" aria-label="Outcomes">
+      {/* Desktop: two independently scrolling panes. Mobile: one page scroll, outcomes first, proof pane below at full height. */}
+      <div className="grid lg:min-h-0 lg:flex-1 lg:grid-cols-[minmax(380px,460px)_1fr]">
+        <aside className="border-b bg-background lg:overflow-y-auto lg:border-r lg:border-b-0" aria-label="Outcomes">
           <OutcomesPanel meeting={meeting} focusId={focus?.id ?? null} onFocus={onFocus} viewer={viewer} />
         </aside>
-        <section className="flex min-h-0 flex-col" aria-label="Recording and transcript">
+        <section ref={proofPane} className="flex h-dvh min-h-0 scroll-mt-0 flex-col lg:h-auto" aria-label="Recording and transcript">
           <PlayerBar
             meeting={meeting}
             currentMs={clock.currentMs}

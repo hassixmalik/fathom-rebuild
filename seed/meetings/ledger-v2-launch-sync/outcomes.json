@@ -391,7 +391,8 @@
         "omar",
         "lena",
         "aisha"
-      ]
+      ],
+      "short": "migration plan"
     },
     {
       "id": "ai-dry-run",
@@ -411,7 +412,8 @@
       "affected": [
         "lena",
         "omar"
-      ]
+      ],
+      "short": "second dry run"
     },
     {
       "id": "ai-tenant-emails",
@@ -431,7 +433,8 @@
       ],
       "affected": [
         "sofia"
-      ]
+      ],
+      "short": "email the 4 tenants"
     },
     {
       "id": "ai-announcement",
@@ -451,7 +454,8 @@
       "affected": [
         "marcus",
         "daniel"
-      ]
+      ],
+      "short": "move announcement"
     }
   ]
 }

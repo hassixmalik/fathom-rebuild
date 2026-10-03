@@ -40,17 +40,39 @@ export type ThreadEvent = {
   affectedParticipantIds: string[];
 };
 
-export type Thread = { id: string; kind: ThreadKind; title: string; current: string; events: ThreadEvent[] };
+export type LinkRelation = "answers" | "picks_up" | "changes";
+
+/** A cross-meeting link, seen from either end. `focusId` is the event/action to land on in the other meeting. */
+export type MeetingLink = {
+  direction: "later" | "earlier";
+  relation: LinkRelation;
+  meetingId: string;
+  meetingTitle: string;
+  startedAt: string;
+  focusId: string;
+};
+
+export type Thread = {
+  id: string;
+  kind: ThreadKind;
+  title: string;
+  current: string;
+  events: ThreadEvent[];
+  /** Later meetings that answered / picked up / changed this thread, and earlier threads this one follows up. */
+  links: MeetingLink[];
+};
 
 export type ActionItem = {
   id: string;
   ownerId: string;
   text: string;
+  short: string;
   due: string | null;
   assignedAtMs: number;
   evidenceSegmentIds: string[];
   threadIds: string[];
   affectedParticipantIds: string[];
+  links: MeetingLink[];
 };
 
 export type Meeting = {

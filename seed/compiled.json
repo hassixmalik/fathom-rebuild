@@ -215,6 +215,13 @@
         "aisha"
        ]
       }
+     ],
+     "resolves": [
+      {
+       "meeting": "ledger-v2-launch-sync",
+       "thread": "migration-blocker",
+       "relation": "picks_up"
+      }
      ]
     },
     {
@@ -244,7 +251,8 @@
         "lena"
        ]
       }
-     ]
+     ],
+     "resolves": []
     },
     {
      "id": "overrun",
@@ -294,7 +302,8 @@
         "lena"
        ]
       }
-     ]
+     ],
+     "resolves": []
     }
    ],
    "action_items": [
@@ -302,6 +311,14 @@
      "id": "ai-rollback-test",
      "owner_id": "aisha",
      "text": "Add an automated rollback test (pair with Omar).",
+     "short": "automated rollback test",
+     "resolves": [
+      {
+       "meeting": "ledger-v2-launch-sync",
+       "thread": "rollback-tests",
+       "relation": "picks_up"
+      }
+     ],
      "due": "Friday",
      "assigned_at_ms": 660000,
      "evidence_segment_ids": [
@@ -616,7 +633,8 @@
         "sofia"
        ]
       }
-     ]
+     ],
+     "resolves": []
     },
     {
      "id": "pdf-export",
@@ -666,7 +684,8 @@
         "sofia"
        ]
       }
-     ]
+     ],
+     "resolves": []
     }
    ],
    "action_items": [
@@ -674,6 +693,8 @@
      "id": "ai-single-page-mocks",
      "owner_id": "daniel",
      "text": "Update the preview mocks to a single page with sticky totals.",
+     "short": "single-page mocks",
+     "resolves": [],
      "due": "Friday",
      "assigned_at_ms": 840000,
      "evidence_segment_ids": [
@@ -885,6 +906,13 @@
         "daniel"
        ]
       }
+     ],
+     "resolves": [
+      {
+       "meeting": "ledger-v2-launch-sync",
+       "thread": "friday-teaser",
+       "relation": "answers"
+      }
      ]
     },
     {
@@ -914,7 +942,8 @@
         "priya"
        ]
       }
-     ]
+     ],
+     "resolves": []
     }
    ],
    "action_items": [
@@ -922,6 +951,8 @@
      "id": "ai-banner-copy",
      "owner_id": "daniel",
      "text": "Change the in-app banner to \"Coming Monday\".",
+     "short": "banner copy",
+     "resolves": [],
      "due": "Today",
      "assigned_at_ms": 405000,
      "evidence_segment_ids": [
@@ -938,6 +969,8 @@
      "id": "ai-confirm-slot",
      "owner_id": "marcus",
      "text": "Confirm the Monday 2 p.m. slot with FinOps Weekly.",
+     "short": "confirm press slot",
+     "resolves": [],
      "due": "Today",
      "assigned_at_ms": 740000,
      "evidence_segment_ids": [
@@ -2547,7 +2580,8 @@
         "daniel"
        ]
       }
-     ]
+     ],
+     "resolves": []
     },
     {
      "id": "flag-rollout",
@@ -2578,7 +2612,8 @@
         "sofia"
        ]
       }
-     ]
+     ],
+     "resolves": []
     },
     {
      "id": "migration-blocker",
@@ -2631,7 +2666,8 @@
         "aisha"
        ]
       }
-     ]
+     ],
+     "resolves": []
     },
     {
      "id": "support-staffing",
@@ -2705,7 +2741,8 @@
         "priya"
        ]
       }
-     ]
+     ],
+     "resolves": []
     },
     {
      "id": "rollback-tests",
@@ -2755,7 +2792,8 @@
         "omar"
        ]
       }
-     ]
+     ],
+     "resolves": []
     },
     {
      "id": "friday-teaser",
@@ -2784,7 +2822,8 @@
         "daniel"
        ]
       }
-     ]
+     ],
+     "resolves": []
     }
    ],
    "action_items": [
@@ -2792,6 +2831,8 @@
      "id": "ai-migration-plan",
      "owner_id": "omar",
      "text": "Own the migration plan: multi-currency fix, Saturday-night run order, rollback runbook.",
+     "short": "migration plan",
+     "resolves": [],
      "due": "Thursday EOD",
      "assigned_at_ms": 2880000,
      "evidence_segment_ids": [
@@ -2812,6 +2853,8 @@
      "id": "ai-dry-run",
      "owner_id": "lena",
      "text": "Run the second dry run on the prod snapshot after the fix is merged.",
+     "short": "second dry run",
+     "resolves": [],
      "due": "Thursday afternoon",
      "assigned_at_ms": 2970000,
      "evidence_segment_ids": [
@@ -2829,6 +2872,8 @@
      "id": "ai-tenant-emails",
      "owner_id": "sofia",
      "text": "Email the four affected tenants about the Saturday-night window.",
+     "short": "email the 4 tenants",
+     "resolves": [],
      "due": "Tomorrow",
      "assigned_at_ms": 3030000,
      "evidence_segment_ids": [
@@ -2846,6 +2891,8 @@
      "id": "ai-announcement",
      "owner_id": "marcus",
      "text": "Move the announcement, email and press slot to Monday.",
+     "short": "move announcement",
+     "resolves": [],
      "due": null,
      "assigned_at_ms": 2710000,
      "evidence_segment_ids": [
@@ -3106,6 +3153,13 @@
         "sofia"
        ]
       }
+     ],
+     "resolves": [
+      {
+       "meeting": "ledger-v2-launch-sync",
+       "thread": "support-staffing",
+       "relation": "answers"
+      }
      ]
     },
     {
@@ -3155,7 +3209,8 @@
         "tom"
        ]
       }
-     ]
+     ],
+     "resolves": []
     }
    ],
    "action_items": [
@@ -3163,6 +3218,8 @@
      "id": "ai-on-call-schedule",
      "owner_id": "tom",
      "text": "Publish the on-call schedule and escalation path to engineering.",
+     "short": "on-call schedule",
+     "resolves": [],
      "due": "Thursday",
      "assigned_at_ms": 720000,
      "evidence_segment_ids": [

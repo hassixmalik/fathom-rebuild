@@ -121,7 +121,7 @@ const threads = outcomes.threads.map((t) => {
     if (!valued.length) errors.push(`${t.id}: decision has no valued event`);
     else if (valued[valued.length - 1].value !== t.current) errors.push(`${t.id}: current "${t.current}" is not the last decided value "${valued[valued.length - 1].value}"`);
   }
-  return { id: t.id, kind: t.kind, title: t.title, current: t.current, events };
+  return { id: t.id, kind: t.kind, title: t.title, current: t.current, events, resolves: t.resolves ?? [] };
 });
 
 const actionItems = outcomes.action_items.map((a) => {
@@ -132,7 +132,8 @@ const actionItems = outcomes.action_items.map((a) => {
   if (!a.affected.includes(a.owner)) errors.push(`${where}: owner must be affected`);
   if (ev[0] && Math.abs(ev[0].start_ms - toMs(a.at)) > TOL) errors.push(`${where}: evidence not within 10s of ${a.at}`);
   for (const t of a.threads) if (!outcomes.threads.some((x) => x.id === t)) errors.push(`${where}: thread ${t} missing`);
-  return { id: a.id, owner_id: a.owner, text: a.text, due: a.due, assigned_at_ms: toMs(a.at), evidence_segment_ids: ev.map((s) => s.id), thread_ids: a.threads, affected_participant_ids: a.affected };
+  if (!a.short || a.short.length > 28) errors.push(`${where}: needs a short label (<= 28 chars) for the decision chain`);
+  return { id: a.id, owner_id: a.owner, text: a.text, short: a.short, resolves: a.resolves ?? [], due: a.due, assigned_at_ms: toMs(a.at), evidence_segment_ids: ev.map((s) => s.id), thread_ids: a.threads, affected_participant_ids: a.affected };
 });
 
 // ---- transcript-level checks ----
@@ -179,6 +180,22 @@ for (const id of readdirSync(join(seedDir, "meetings")).sort()) {
   meetings.push(m);
   const talk = m.participants.map((p) => `${p.id} ${Math.round((p.words / m.meeting.word_count) * 100)}%`).join(", ");
   console.log(`${id}: ${m.segments.length} segments, ${m.meeting.word_count} words, ${m.threads.length} threads, ${m.action_items.length} actions | ${talk}`);
+}
+// Cross-meeting links: target must exist, be an earlier meeting, and be something that can be answered or picked up.
+const byId = new Map(meetings.map((m) => [m.meeting.id, m]));
+const RELATIONS = new Set(["answers", "picks_up", "changes"]);
+for (const m of meetings) {
+  const sources = [...m.threads.map((t) => ["thread", t]), ...m.action_items.map((a) => ["action", a])];
+  for (const [kind, src] of sources)
+    for (const l of src.resolves) {
+      const where = `${m.meeting.id}: ${kind} ${src.id} -> ${l.meeting}/${l.thread}`;
+      const target = byId.get(l.meeting);
+      const thread = target?.threads.find((t) => t.id === l.thread);
+      if (!RELATIONS.has(l.relation)) errors.push(`${where}: unknown relation ${l.relation}`);
+      if (!thread) errors.push(`${where}: target thread does not exist`);
+      else if (Date.parse(target.meeting.started_at) >= Date.parse(m.meeting.started_at)) errors.push(`${where}: target meeting is not earlier`);
+      else if (l.relation === "answers" && thread.kind !== "question") errors.push(`${where}: only questions can be answered`);
+    }
 }
 if (errors.length) {
   console.error(`seed validation failed (${errors.length}):\n  - ${errors.join("\n  - ")}`);
